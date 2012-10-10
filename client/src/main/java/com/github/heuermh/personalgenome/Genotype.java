@@ -43,7 +43,7 @@ public final class Genotype {
         checkNotNull(profileId);
         checkNotNull(values);
         this.profileId = profileId;
-        this.alleles = ImmutableMap.of(values);
+        this.values = ImmutableMap.copyOf(values);
     }
 
     public String getProfileId() {

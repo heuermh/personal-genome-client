@@ -43,7 +43,7 @@ public final class User {
         checkNotNull(id);
         checkNotNull(profiles);
         this.id = id;
-        this.profiles = ImmutableList.of(profiles);
+        this.profiles = ImmutableList.copyOf(profiles);
     }
 
     public String getId() {

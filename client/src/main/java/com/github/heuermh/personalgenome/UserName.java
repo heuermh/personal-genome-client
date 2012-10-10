@@ -49,7 +49,7 @@ public final class UserName {
         this.id = id;
         this.firstName = firstName;
         this.lastName = lastName;
-        this.profileNames = ImmutableList.of(profileNames);
+        this.profileNames = ImmutableList.copyOf(profileNames);
     }
 
     public String getId() {
