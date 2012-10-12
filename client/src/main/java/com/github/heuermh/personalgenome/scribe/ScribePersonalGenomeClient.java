@@ -35,6 +35,11 @@ import com.github.heuermh.personalgenome.client.PersonalGenomeClient;
 import com.github.heuermh.personalgenome.client.User;
 import com.github.heuermh.personalgenome.client.UserName;
 
+import org.scribe.model.OAuthRequest;
+import org.scribe.model.Response;
+import org.scribe.model.Token;
+import org.scribe.model.Verb;
+import org.scribe.model.Verifier;
 import org.scribe.oauth.OAuthService;
 
 /**
@@ -44,6 +49,10 @@ import org.scribe.oauth.OAuthService;
  */
 final class ScribePersonalGenomeClient implements PersonalGenomeClient {
     private final OAuthService service;
+    private static final String USER_URL = "https://api.23andme.com/1/user";
+    private static final String NAMES_URL = "https://api.23andme.com/1/names";
+    private static final String HAPLOGROUPS_URL = "https://api.23andme.com/1/haplogroups";
+    private static final String GENOTYPE_URL = "https://api.23andme.com/1/genotype";
 
     @Inject
     ScribePersonalGenomeClient(final OAuthService service) {
@@ -53,9 +62,16 @@ final class ScribePersonalGenomeClient implements PersonalGenomeClient {
 
     @Override
     public User user() {
-        //Token requestToken = service.getRequestToken();
-        //String authorizationUrl = service.getAuthorizationUrl(requestToken);
-        //OAuthRequest request = new OAuthRequest(Verb.GET, USER_URL, ...
+        Token requestToken = service.getRequestToken();
+        String authorizationUrl = service.getAuthorizationUrl(requestToken);
+        Verifier verifier = new Verifier("");
+        Token accessToken = service.getAccessToken(requestToken, verifier);
+        OAuthRequest request = new OAuthRequest(Verb.GET, USER_URL);
+        request.addHeader("Authorization", String.format("Bearer %s", accessToken));
+        service.signRequest(accessToken, request);
+        Response response = request.send();
+        int code = response.getCode();
+        String body = response.getBody();
 
         return null;
     }
