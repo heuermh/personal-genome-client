@@ -23,6 +23,8 @@
 */
 package com.github.heuermh.personalgenome.client.scribe;
 
+import com.fasterxml.jackson.core.JsonFactory;
+
 import com.github.heuermh.personalgenome.client.AbstractPersonalGenomeClientTest;
 import com.github.heuermh.personalgenome.client.PersonalGenomeClient;
 
@@ -32,6 +34,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import org.scribe.oauth.OAuthService;
+import org.scribe.model.Token;
 
 /**
  * Unit test for ScribePersonalGenomeClient.
@@ -39,6 +42,10 @@ import org.scribe.oauth.OAuthService;
 public final class ScribePersonalGenomeClientTest extends AbstractPersonalGenomeClientTest {
     @Mock
     private OAuthService service;
+    @Mock
+    private Token accessToken;
+    @Mock
+    private JsonFactory jsonFactory;
 
     @Before
     public void setUp() {
@@ -48,6 +55,6 @@ public final class ScribePersonalGenomeClientTest extends AbstractPersonalGenome
 
     @Override
     protected PersonalGenomeClient createPersonalGenomeClient() {
-        return new ScribePersonalGenomeClient(service);
+        return new ScribePersonalGenomeClient(accessToken, service, jsonFactory);
     }
 }

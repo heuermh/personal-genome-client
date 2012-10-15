@@ -34,6 +34,8 @@ import com.google.inject.Injector;
 
 import com.google.inject.name.Names;
 
+import org.scribe.model.Token;
+
 /**
  * Unit test for ScribeModule.
  */

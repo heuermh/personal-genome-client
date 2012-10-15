@@ -33,5 +33,6 @@ public interface PersonalGenomeClient {
     User user();
     UserName names();
     List<Haplogroup> haplogroups();
-    List<Genotype> genotypes();
+    List<Genotype> genotypes(String... locations);
+    List<Genotype> genotypes(Iterable<String> locations);
 }

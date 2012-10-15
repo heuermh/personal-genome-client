@@ -23,7 +23,7 @@
 */
 package com.github.heuermh.personalgenome.client.scribe;
 
-import com.github.heuermh.personalgenome.client.PersonalGenomeClient;
+import com.fasterxml.jackson.core.JsonFactory;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
@@ -41,7 +41,12 @@ public final class ScribeModule extends AbstractModule {
 
     @Override
     protected void configure() {
-        bind(PersonalGenomeClient.class).to(ScribePersonalGenomeClient.class);
+        // empty
+    }
+
+    @Provides @Singleton
+    JsonFactory createJsonFactory() {
+        return new JsonFactory();
     }
 
     @Provides @Singleton

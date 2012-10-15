@@ -25,6 +25,9 @@ package com.github.heuermh.personalgenome.client;
 
 import static org.junit.Assert.assertNotNull;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.junit.Before;
 import org.junit.Test;
 
@@ -43,5 +46,29 @@ public abstract class AbstractPersonalGenomeClientTest {
     @Test
     public void testCreatePersonalGenomeClient() {
         assertNotNull(client);
+    }
+
+    @Test(expected=NullPointerException.class)
+    public void testGenotypesNullLocations() {
+        client.genotypes((String) null);
+    }
+
+    @Test(expected=NullPointerException.class)
+    public void testGenotypesNullIterableLocations() {
+        client.genotypes((Iterable<String>) null);
+    }
+
+    @Test(expected=NullPointerException.class)
+    public void testGenotypesNullLocation() {
+        client.genotypes("rs1234", null, "rs2345");
+    }
+
+    @Test(expected=NullPointerException.class)
+    public void testGenotypesNullInIterableLocations() {
+        List<String> locations = new ArrayList<String>();
+        locations.add("rs1234");
+        locations.add(null);
+        locations.add("rs2345");
+        client.genotypes(locations);
     }
 }
