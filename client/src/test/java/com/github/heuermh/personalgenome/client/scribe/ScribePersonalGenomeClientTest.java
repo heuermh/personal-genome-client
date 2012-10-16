@@ -23,17 +23,37 @@
 */
 package com.github.heuermh.personalgenome.client.scribe;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.verify;
+
+import java.io.InputStream;
+
+import java.util.List;
+
 import com.fasterxml.jackson.core.JsonFactory;
 
 import com.github.heuermh.personalgenome.client.AbstractPersonalGenomeClientTest;
+import com.github.heuermh.personalgenome.client.Haplogroup;
+import com.github.heuermh.personalgenome.client.Genotype;
 import com.github.heuermh.personalgenome.client.PersonalGenomeClient;
+import com.github.heuermh.personalgenome.client.User;
+import com.github.heuermh.personalgenome.client.UserName;
 
 import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import org.scribe.oauth.OAuthService;
+import org.scribe.model.OAuthRequest;
 import org.scribe.model.Token;
 
 /**
@@ -44,8 +64,13 @@ public final class ScribePersonalGenomeClientTest extends AbstractPersonalGenome
     private OAuthService service;
     @Mock
     private Token accessToken;
-    @Mock
-    private JsonFactory jsonFactory;
+
+    private static JsonFactory jsonFactory;
+
+    @BeforeClass
+    public static void staticSetUp() {
+        jsonFactory = new JsonFactory();
+    }
 
     @Before
     public void setUp() {
@@ -56,5 +81,71 @@ public final class ScribePersonalGenomeClientTest extends AbstractPersonalGenome
     @Override
     protected PersonalGenomeClient createPersonalGenomeClient() {
         return new ScribePersonalGenomeClient(accessToken, service, jsonFactory);
+    }
+
+    @Test
+    public void testCreateAndSignRequest() {
+        OAuthRequest request = ((ScribePersonalGenomeClient) client).createAndSignRequest("http://localhost");
+        assertNotNull(request);
+        assertTrue(request.getHeaders().containsKey("Authorization"));
+        verify(service).signRequest(eq(accessToken), any(OAuthRequest.class));
+    }
+
+    @Test
+    public void testParseUser() {
+        InputStream inputStream = getClass().getResourceAsStream("user.json");
+        User user = ((ScribePersonalGenomeClient) client).parseUser(inputStream);
+        assertNotNull(user);
+        assertEquals("c3a110", user.getId());
+        assertEquals(2, user.getProfiles().size());
+        assertEquals("83a112", user.getProfiles().get(0).getId());
+        assertTrue(user.getProfiles().get(0).getGenotyped());
+        assertEquals("c92839", user.getProfiles().get(1).getId());
+        assertTrue(user.getProfiles().get(1).getGenotyped());
+    }
+
+    @Test
+    public void testParseNames() {
+        InputStream inputStream = getClass().getResourceAsStream("names.json");
+        UserName userName = ((ScribePersonalGenomeClient) client).parseNames(inputStream);
+        assertNotNull(userName);
+        assertEquals("c3a110", userName.getId());
+        assertEquals("Gene", userName.getFirstName());
+        assertEquals("Mendel", userName.getLastName());
+        assertEquals(2, userName.getProfileNames().size());
+        assertEquals("83a112", userName.getProfileNames().get(0).getId());
+        assertEquals("Chip", userName.getProfileNames().get(0).getFirstName());
+        assertEquals("Mendel", userName.getProfileNames().get(0).getLastName());
+        assertEquals("c92839", userName.getProfileNames().get(1).getId());
+        assertEquals("Gene", userName.getProfileNames().get(1).getFirstName());
+        assertEquals("Mendel", userName.getProfileNames().get(1).getLastName());
+    }
+
+    @Test
+    public void testParseHaplogroups() {
+        InputStream inputStream = getClass().getResourceAsStream("haplogroups.json");
+        List<Haplogroup> haplogroups = ((ScribePersonalGenomeClient) client).parseHaplogroups(inputStream);
+        assertNotNull(haplogroups);
+        assertEquals(2, haplogroups.size());
+        assertEquals("44aa40", haplogroups.get(0).getProfileId());
+        assertEquals("p256", haplogroups.get(0).getPaternal());
+        assertEquals("r1a1", haplogroups.get(0).getMaternal());
+        assertEquals("d37b1d", haplogroups.get(1).getProfileId());
+        assertNull(haplogroups.get(1).getPaternal());
+        assertEquals("h18", haplogroups.get(1).getMaternal());
+    }
+
+    @Test
+    public void testParseGenotypes() {
+        InputStream inputStream = getClass().getResourceAsStream("genotype.json");
+        List<Genotype> genotypes = ((ScribePersonalGenomeClient) client).parseGenotypes(inputStream);
+        assertNotNull(genotypes);
+        assertEquals(2, genotypes.size());
+        assertEquals("44aa40", genotypes.get(0).getProfileId());
+        assertEquals("AA", genotypes.get(0).getValues().get("rs3094315"));
+        assertEquals("TT", genotypes.get(0).getValues().get("rs3737728"));
+        assertEquals("d37b1d", genotypes.get(1).getProfileId());
+        assertEquals("AA", genotypes.get(1).getValues().get("rs3094315"));
+        assertEquals("TT", genotypes.get(1).getValues().get("rs3737728"));
     }
 }

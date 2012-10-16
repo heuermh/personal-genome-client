@@ -84,16 +84,68 @@ public final class ScribePersonalGenomeClient implements PersonalGenomeClient {
 
     @Override
     public User user() {
-        OAuthRequest request = new OAuthRequest(Verb.GET, USER_URL);
-        request.addHeader("Authorization", String.format("Bearer %s", accessToken));
-        service.signRequest(accessToken, request);
+        OAuthRequest request = createAndSignRequest(USER_URL);
         Response response = request.send();
         int code = response.getCode();
 
-        InputStream inputStream = null;
+        if (code == 200) {
+            logger.trace("user call ok");
+            return parseUser(response.getStream());
+        }
+        logger.warn("could not call user, response code " + code);
+        return null;
+    }
+
+    @Override
+    public UserName names() {
+        OAuthRequest request = createAndSignRequest(NAMES_URL);
+        Response response = request.send();
+        int code = response.getCode();
+
+        if (code == 200) {
+            logger.trace("names call ok");
+            return parseNames(response.getStream());
+        }
+        logger.warn("could not call names, response code " + code);
+        return null;
+    }
+
+    @Override
+    public List<Haplogroup> haplogroups() {
+        OAuthRequest request = createAndSignRequest(HAPLOGROUPS_URL);
+        Response response = request.send();
+        int code = response.getCode();
+
+        if (code == 200) {
+            logger.trace("haplogroups call ok");
+            return parseHaplogroups(response.getStream());
+        }
+        logger.warn("could not call haplogroups, response code " + code);
+        return null;
+    }
+
+    @Override
+    public List<Genotype> genotypes(final String... locations) {
+        checkNotNull(locations);
+        return genotypesWithScope(Joiner.on(" ").join(locations));
+    }
+
+    @Override
+    public List<Genotype> genotypes(final Iterable<String> locations) {
+        checkNotNull(locations);
+        return genotypesWithScope(Joiner.on(" ").join(locations));
+    }
+
+    OAuthRequest createAndSignRequest(final String url) {
+        OAuthRequest request = new OAuthRequest(Verb.GET, url);
+        request.addHeader("Authorization", String.format("Bearer %s", accessToken));
+        service.signRequest(accessToken, request);
+        return request;
+    }
+
+    User parseUser(final InputStream inputStream) {
         JsonParser parser = null;
         try {
-            inputStream = response.getStream();
             parser = jsonFactory.createJsonParser(inputStream);
             parser.nextToken();
 
@@ -117,7 +169,7 @@ public final class ScribePersonalGenomeClient implements PersonalGenomeClient {
                                 profileId = parser.getText();
                             }
                             else if ("genotyped".equals(profileField)) {
-                                genotyped = Boolean.valueOf(parser.getText());
+                                genotyped = parser.getBooleanValue();
                             }
                         }
                         profiles.add(new Profile(profileId, genotyped));
@@ -127,7 +179,7 @@ public final class ScribePersonalGenomeClient implements PersonalGenomeClient {
             return new User(id, profiles);
         }
         catch (IOException e) {
-            logger.warn("could not call user, response code " + code, e);
+            logger.warn("could not parse user", e);
         }
         finally {
             try {
@@ -146,18 +198,9 @@ public final class ScribePersonalGenomeClient implements PersonalGenomeClient {
         return null;
     }
 
-    @Override
-    public UserName names() {
-        OAuthRequest request = new OAuthRequest(Verb.GET, NAMES_URL);
-        request.addHeader("Authorization", String.format("Bearer %s", accessToken));
-        service.signRequest(accessToken, request);
-        Response response = request.send();
-        int code = response.getCode();
-
-        InputStream inputStream = null;
+    UserName parseNames(final InputStream inputStream) {
         JsonParser parser = null;
         try {
-            inputStream = response.getStream();
             parser = jsonFactory.createJsonParser(inputStream);
             parser.nextToken();
 
@@ -203,7 +246,7 @@ public final class ScribePersonalGenomeClient implements PersonalGenomeClient {
             return new UserName(id, firstName, lastName, profileNames);
         }
         catch (IOException e) {
-            logger.warn("could not call names, response code " + code, e);
+            logger.warn("could not parse names", e);
         }
         finally {
             try {
@@ -222,18 +265,9 @@ public final class ScribePersonalGenomeClient implements PersonalGenomeClient {
         return null;
     }
 
-    @Override
-    public List<Haplogroup> haplogroups() {
-        OAuthRequest request = new OAuthRequest(Verb.GET, HAPLOGROUPS_URL);
-        request.addHeader("Authorization", String.format("Bearer %s", accessToken));
-        service.signRequest(accessToken, request);
-        Response response = request.send();
-        int code = response.getCode();
-
-        InputStream inputStream = null;
+    List<Haplogroup> parseHaplogroups(final InputStream inputStream) {
         JsonParser parser = null;
         try {
-            inputStream = response.getStream();
             parser = jsonFactory.createJsonParser(inputStream);
             parser.nextToken();
 
@@ -242,30 +276,27 @@ public final class ScribePersonalGenomeClient implements PersonalGenomeClient {
             String paternal = null;
             List<Haplogroup> haplogroups = new ArrayList<Haplogroup>();
 
-            while (parser.nextToken() != JsonToken.END_OBJECT) {
-                while (parser.nextToken() != JsonToken.END_ARRAY) {
-                    while (parser.nextToken() != JsonToken.END_OBJECT) {
-                        String field = parser.getCurrentName();
-                        parser.nextToken();
+            while (parser.nextToken() != JsonToken.END_ARRAY) {
+                while (parser.nextToken() != JsonToken.END_OBJECT) {
+                    String field = parser.getCurrentName();
+                    parser.nextToken();
 
-                        if ("id".equals(field)) {
-                            id = parser.getText();
-                        }
-                        else if ("maternal".equals(field)) {
-                            maternal = parser.getText();
-                        }
-                        else if ("paternal".equals(field)) {
-                            // todo:  be sure to check what happens when text is null
-                            paternal = parser.getText();
-                        }
+                    if ("id".equals(field)) {
+                        id = parser.getText();
                     }
-                    haplogroups.add(new Haplogroup(id, maternal, paternal));
+                    else if ("maternal".equals(field)) {
+                        maternal = parser.getText();
+                    }
+                    else if ("paternal".equals(field)) {
+                        paternal = "null" == parser.getText() ? null : parser.getText();
+                    }
                 }
+                haplogroups.add(new Haplogroup(id, paternal, maternal));
             }
             return haplogroups;
         }
         catch (IOException e) {
-            logger.warn("could not call haplogroups, response code " + code, e);
+            logger.warn("could not parse haplogroups", e);
         }
         finally {
             try {
@@ -284,18 +315,23 @@ public final class ScribePersonalGenomeClient implements PersonalGenomeClient {
         return null;
     }
 
-    private List<Genotype> genotypesWithScope(final String scope) {
+    List<Genotype> genotypesWithScope(final String scope) {
         // todo: URL encode and/or otherwise sanitize scope?
-        OAuthRequest request = new OAuthRequest(Verb.GET, String.format(GENOTYPE_URL, scope));
-        request.addHeader("Authorization", String.format("Bearer %s", accessToken));
-        service.signRequest(accessToken, request);
+        OAuthRequest request = createAndSignRequest(String.format(GENOTYPE_URL, scope));
         Response response = request.send();
         int code = response.getCode();
 
-        InputStream inputStream = null;
+        if (code == 200) {
+            logger.trace("genotype call ok");
+            return parseGenotypes(response.getStream());
+        }
+        logger.warn("could not call genotype, response code " + code);
+        return null;
+    }
+
+    List<Genotype> parseGenotypes(final InputStream inputStream) {
         JsonParser parser = null;
         try {
-            inputStream = response.getStream();
             parser = jsonFactory.createJsonParser(inputStream);
             parser.nextToken();
 
@@ -305,29 +341,27 @@ public final class ScribePersonalGenomeClient implements PersonalGenomeClient {
             Map<String, String> values = new HashMap<String, String>();
             List<Genotype> genotypes = new ArrayList<Genotype>();
 
-            while (parser.nextToken() != JsonToken.END_OBJECT) {
-                while (parser.nextToken() != JsonToken.END_ARRAY) {
-                    while (parser.nextToken() != JsonToken.END_OBJECT) {
-                        String field = parser.getCurrentName();
-                        parser.nextToken();
+            while (parser.nextToken() != JsonToken.END_ARRAY) {
+                while (parser.nextToken() != JsonToken.END_OBJECT) {
+                    String field = parser.getCurrentName();
+                    parser.nextToken();
 
-                        if ("id".equals(field)) {
-                            id = parser.getText();
-                        }
-                        else {
-                            location = field;
-                            interpretation = parser.getText();
-                            values.put(location, interpretation);
-                        }
+                    if ("id".equals(field)) {
+                        id = parser.getText();
                     }
-                    genotypes.add(new Genotype(id, values));
-                    values.clear();
+                    else {
+                        location = field;
+                        interpretation = parser.getText();
+                        values.put(location, interpretation);
+                    }
                 }
+                genotypes.add(new Genotype(id, values));
+                values.clear();
             }
             return genotypes;
         }
         catch (IOException e) {
-            logger.warn("could not call genotype, response code " + code, e);
+            logger.warn("could not parse genotypes");
         }
         finally {
             try {
@@ -344,17 +378,5 @@ public final class ScribePersonalGenomeClient implements PersonalGenomeClient {
             }
         }
         return null;
-    }
-
-    @Override
-    public List<Genotype> genotypes(final String... locations) {
-        checkNotNull(locations);
-        return genotypesWithScope(Joiner.on(" ").join(locations));
-    }
-
-    @Override
-    public List<Genotype> genotypes(final Iterable<String> locations) {
-        checkNotNull(locations);
-        return genotypesWithScope(Joiner.on(" ").join(locations));
     }
 }
