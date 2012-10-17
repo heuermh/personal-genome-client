@@ -4,10 +4,12 @@ personal-genome-client
 Java client for the 23andMe Personal Genome API.
 
 
-##Hacking personal-genome-client
+###Hacking personal-genome-client
 
-Install JDK 1.6 or later, http://openjdk.java.net/
-Install Apache Maven 3.0.4 or later, http://maven.apache.org/
+Install
+
+ * JDK 1.6 or later, http://openjdk.java.net/
+ * Apache Maven 3.0.4 or later, http://maven.apache.org/
 
 
 To build
