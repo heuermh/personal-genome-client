@@ -30,17 +30,25 @@
     <version>7</version>
   </parent>
   <groupId>com.github.heuermh.personalgenome</groupId>
-  <artifactId>personal-genome-client-multimodule</artifactId>
+  <artifactId>personal-genome-multimodule</artifactId>
   <version>1.0-SNAPSHOT</version>
   <packaging>pom</packaging>
 
-  <name>personal-genome-client-multimodule</name>
+  <name>personal-genome-multimodule</name>
   <description>Multimodule build for the personal-genome-client project.</description>
   <url>http://github.com/heuermh/personal-genome-client</url>
 
   <modules>
     <module>client</module>
+    <module>webapp</module>
   </modules>
+
+  <repositories>
+    <repository>
+      <id>Spark repository</id>
+      <url>http://www.sparkjava.com/nexus/content/repositories/spark/</url>
+    </repository>
+  </repositories>
 
   <build>
    <pluginManagement>
@@ -231,25 +239,16 @@
         <artifactId>guice</artifactId>
         <version>3.0</version>
       </dependency>
-      <!--
-      <dependency>
-        <groupId>com.jayway.restassured</groupId>
-        <artifactId>rest-assured</artifactId>
-        <version>1.6.1</version>
-      </dependency>
-      -->
       <dependency>
         <groupId>junit</groupId>
         <artifactId>junit</artifactId>
         <version>4.10</version>
       </dependency>
-      <!--
       <dependency>
-        <groupId>org.dishevelled</groupId>
-        <artifactId>dsh-commandline</artifactId>
-        <version>1.0</version>
+	<groupId>org.99soft.guice</groupId>
+	<artifactId>rocoto</artifactId>
+	<version>6.1</version>
       </dependency>
-      -->
       <dependency>
         <groupId>org.mockito</groupId>
         <artifactId>mockito-core</artifactId> 
@@ -269,6 +268,22 @@
         <groupId>org.slf4j</groupId>
         <artifactId>slf4j-log4j12</artifactId>
         <version>1.6.4</version>
+      </dependency>
+      <!-- override transitive dependency on slf4j 1.6.1 -->
+      <dependency>
+        <groupId>spark</groupId>
+        <artifactId>spark</artifactId>
+        <version>0.9.9.3-SNAPSHOT</version>
+        <exclusions>
+          <exclusion>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+          </exclusion>
+        </exclusions>
       </dependency>
     </dependencies>
   </dependencyManagement>

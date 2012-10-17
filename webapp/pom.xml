@@ -29,31 +29,39 @@
     <artifactId>personal-genome-multimodule</artifactId>
     <version>1.0-SNAPSHOT</version>
   </parent>
-  <artifactId>personal-genome-client</artifactId>
+  <artifactId>personal-genome-webapp</artifactId>
   <version>1.0-SNAPSHOT</version>
   <packaging>jar</packaging>
 
-  <name>personal-genome-client</name>
-  <description>Java client for the 23andMe Personal Genome API.</description>
+  <name>personal-genome-webapp</name>
+  <description>Demo webapp for the 23andMe Personal Genome API.</description>
 
   <properties>
-    <componentId>client</componentId>
+    <componentId>webapp</componentId>
   </properties>
 
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <configuration>
+          <archive>
+            <manifest>
+              <mainClass>com.github.heuermh.personalgenome.webapp.PersonalGenomeWebapp</mainClass>
+            </manifest>
+          </archive>
+          <descriptorRefs>
+            <descriptorRef>jar-with-dependencies</descriptorRef>
+          </descriptorRefs>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
   <dependencies>
     <dependency>
-      <groupId>com.fasterxml.jackson.core</groupId>
-      <artifactId>jackson-core</artifactId>
-      <scope>compile</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.google.code.findbugs</groupId>
-      <artifactId>jsr305</artifactId>
-      <scope>compile</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.google.guava</groupId>
-      <artifactId>guava</artifactId>
+      <groupId>com.github.heuermh.personalgenome</groupId>
+      <artifactId>personal-genome-client</artifactId>
+      <version>${project.version}</version>
       <scope>compile</scope>
     </dependency>
     <dependency>
@@ -67,9 +75,9 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.mockito</groupId>
-      <artifactId>mockito-core</artifactId>
-      <scope>test</scope>
+      <groupId>org.99soft.guice</groupId>
+      <artifactId>rocoto</artifactId>
+      <scope>compile</scope>
     </dependency>
     <dependency>
       <groupId>org.scribe</groupId>
@@ -84,7 +92,12 @@
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-log4j12</artifactId>
-      <scope>test</scope>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>spark</groupId>
+      <artifactId>spark</artifactId>
+      <scope>compile</scope>
     </dependency>
   </dependencies>
 </project>

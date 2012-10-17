@@ -21,32 +21,8 @@
     > http://www.opensource.org/licenses/lgpl-license.php
 
 */
-package com.github.heuermh.personalgenome.client.scribe;
-
-import org.scribe.builder.api.DefaultApi20;
-import org.scribe.model.OAuthConfig;
-import org.scribe.model.Verb;
-import org.scribe.utils.OAuthEncoder;
 
 /**
- * Personal genome API.
+ * Demo webapp for the 23andMe Personal Genome API.
  */
-public final class PersonalGenomeApi extends DefaultApi20 {
-    private static final String ACCESS_TOKEN_URL = "https://api.23andme.com/token/";
-    private static final String AUTHORIZE_URL = "https://api.23andme.com/authorize/?client_id=%s&response_type=code&redirect_uri=%sscope=%s";
-
-    @Override
-    public String getAccessTokenEndpoint() {
-        return ACCESS_TOKEN_URL;
-    }
-
-    @Override
-    public Verb getAccessTokenVerb() {
-        return Verb.POST;
-    }
-
-    @Override
-    public String getAuthorizationUrl(final OAuthConfig config) {
-        return String.format(AUTHORIZE_URL, config.getApiKey(), OAuthEncoder.encode(config.getCallback()), config.getScope());
-    }
-}
+package com.github.heuermh.personalgenome.webapp;

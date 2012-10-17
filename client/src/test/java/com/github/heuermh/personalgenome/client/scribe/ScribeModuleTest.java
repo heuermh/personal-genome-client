@@ -67,6 +67,7 @@ public final class ScribeModuleTest {
             bind(String.class).annotatedWith(Names.named("apiKey")).toInstance("apiKey");
             bind(String.class).annotatedWith(Names.named("apiSecret")).toInstance("apiSecret");
             bind(String.class).annotatedWith(Names.named("callback")).toInstance("callback");
+            bind(String.class).annotatedWith(Names.named("scope")).toInstance("scope");
         }
     }
 }

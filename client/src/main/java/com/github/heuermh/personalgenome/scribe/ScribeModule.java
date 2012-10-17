@@ -52,12 +52,14 @@ public final class ScribeModule extends AbstractModule {
     @Provides @Singleton
     OAuthService createOAuthService(@Named("apiKey") final String apiKey,
                                     @Named("apiSecret") final String apiSecret,
-                                    @Named("callback") final String callback) {
+                                    @Named("callback") final String callback,
+                                    @Named("scope") final String scope) {
         return new ServiceBuilder()
             .provider(PersonalGenomeApi.class)
             .apiKey(apiKey)
             .apiSecret(apiSecret)
             .callback(callback)
+            .scope(scope)
             .build();
     }
 }
