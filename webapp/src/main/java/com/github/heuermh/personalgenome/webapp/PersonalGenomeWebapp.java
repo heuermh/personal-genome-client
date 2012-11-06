@@ -113,8 +113,7 @@ public final class PersonalGenomeWebapp {
     private static final class ParameterModule extends ConfigurationModule {
         @Override
         protected void bindConfigurations() {
-            // expect apiKey, apiSecret, callback, scope in environment variables or system properties
-            bindEnvironmentVariables();
+            // expect apiKey, apiSecret, callback, scope in system properties
             bindSystemProperties();
         }
     }

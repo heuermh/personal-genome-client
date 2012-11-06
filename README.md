@@ -23,16 +23,7 @@ To build demo webapp
     $ mvn assembly:assembly
 
 
-To run demo webapp, your 23andMe Personal Genome API client details must be provided as system environment variables
-
-    $ export apiKey=apiKey
-    $ export apiSecret=apiSecret
-    $ export callback=http://localhost:8080/after-auth-landing/
-    $ export scope=scope
-    $ java -jar target/personal-genome-webapp-1.0-SNAPSHOT-jar-with-dependencies.jar
-
-
-or as command line properties
+To run demo webapp, your 23andMe Personal Genome API client details must be provided as command line system properties
 
     $ java -DapiKey=apiKey -DapiSecret=apiSecret -Dcallback=http://localhost:8080/after-auth-landing/ -Dscope=scope -jar 
 
