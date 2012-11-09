@@ -41,6 +41,8 @@ import com.google.common.base.Joiner;
 
 import com.github.heuermh.personalgenome.client.Genotype;
 import com.github.heuermh.personalgenome.client.Haplogroup;
+import com.github.heuermh.personalgenome.client.MaternalTerminalSnp;
+import com.github.heuermh.personalgenome.client.PaternalTerminalSnp;
 import com.github.heuermh.personalgenome.client.PersonalGenomeClient;
 import com.github.heuermh.personalgenome.client.Profile;
 import com.github.heuermh.personalgenome.client.ProfileName;
@@ -274,7 +276,12 @@ public final class ScribePersonalGenomeClient implements PersonalGenomeClient {
             String id = null;
             String maternal = null;
             String paternal = null;
+            String rsid = null;
+            String rcrsPosition = null;
+            String snp = null;
             List<Haplogroup> haplogroups = new ArrayList<Haplogroup>();
+            List<PaternalTerminalSnp> paternalTerminalSnps = new ArrayList<PaternalTerminalSnp>();
+            List<MaternalTerminalSnp> maternalTerminalSnps = new ArrayList<MaternalTerminalSnp>();
 
             while (parser.nextToken() != JsonToken.END_ARRAY) {
                 while (parser.nextToken() != JsonToken.END_OBJECT) {
@@ -290,8 +297,42 @@ public final class ScribePersonalGenomeClient implements PersonalGenomeClient {
                     else if ("paternal".equals(field)) {
                         paternal = "null" == parser.getText() ? null : parser.getText();
                     }
+                    else if ("maternal_terminal_snps".equals(field)) {
+                        while (parser.nextToken() != JsonToken.END_ARRAY) {
+                            while (parser.nextToken() != JsonToken.END_OBJECT) {
+                                String maternalTerminalSnpsField = parser.getCurrentName();
+                                parser.nextToken();
+
+                                if ("rsid".equals(maternalTerminalSnpsField)) {
+                                    rsid = parser.getText();
+                                }
+                                else if ("rcrs_position".equals(maternalTerminalSnpsField)) {
+                                    rcrsPosition = parser.getText();
+                                }
+                            }
+                            maternalTerminalSnps.add(new MaternalTerminalSnp(rsid, rcrsPosition));
+                        }
+                    }
+                    else if ("paternal_terminal_snps".equals(field)) {
+                        while (parser.nextToken() != JsonToken.END_ARRAY) {
+                            while (parser.nextToken() != JsonToken.END_OBJECT) {
+                                String paternalTerminalSnpsField = parser.getCurrentName();
+                                parser.nextToken();
+
+                                if ("rsid".equals(paternalTerminalSnpsField)) {
+                                    rsid = parser.getText();
+                                }
+                                else if ("snp".equals(paternalTerminalSnpsField)) {
+                                    snp = parser.getText();
+                                }
+                            }
+                            paternalTerminalSnps.add(new PaternalTerminalSnp(rsid, snp));
+                        }
+                    }
                 }
-                haplogroups.add(new Haplogroup(id, paternal, maternal));
+                haplogroups.add(new Haplogroup(id, paternal, maternal, paternalTerminalSnps, maternalTerminalSnps));
+                paternalTerminalSnps.clear();
+                maternalTerminalSnps.clear();
             }
             return haplogroups;
         }

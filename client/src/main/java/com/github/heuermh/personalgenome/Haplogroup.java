@@ -25,7 +25,11 @@ package com.github.heuermh.personalgenome.client;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.util.List;
+
 import javax.annotation.concurrent.Immutable;
+
+import com.google.common.collect.ImmutableList;
 
 /**
  * Haplogroup.
@@ -35,13 +39,22 @@ public final class Haplogroup {
     private final String profileId;
     private final String paternal; // may be null
     private final String maternal;
+    private final List<PaternalTerminalSnp> paternalTerminalSnps; // may be null
+    private final List<MaternalTerminalSnp> maternalTerminalSnps;
 
-    public Haplogroup(final String profileId, final String paternal, final String maternal) {
+    public Haplogroup(final String profileId,
+                      final String paternal,
+                      final String maternal,
+                      final List<PaternalTerminalSnp> paternalTerminalSnps,
+                      final List<MaternalTerminalSnp> maternalTerminalSnps) {
         checkNotNull(profileId);
         checkNotNull(maternal);
+        checkNotNull(maternalTerminalSnps);
         this.profileId = profileId;
         this.paternal = paternal;
         this.maternal = maternal;
+        this.paternalTerminalSnps = paternalTerminalSnps == null ? null : ImmutableList.copyOf(paternalTerminalSnps);
+        this.maternalTerminalSnps = ImmutableList.copyOf(maternalTerminalSnps);
     }
 
     public String getProfileId() {
@@ -54,5 +67,13 @@ public final class Haplogroup {
 
     public String getMaternal() {
         return maternal;
+    }
+
+    public List<PaternalTerminalSnp> getPaternalTerminalSnps() {
+        return paternalTerminalSnps;
+    }
+
+    public List<MaternalTerminalSnp> getMaternalTerminalSnps() {
+        return maternalTerminalSnps;
     }
 }

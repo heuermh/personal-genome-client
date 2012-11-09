@@ -126,13 +126,18 @@ public final class ScribePersonalGenomeClientTest extends AbstractPersonalGenome
         InputStream inputStream = getClass().getResourceAsStream("haplogroups.json");
         List<Haplogroup> haplogroups = ((ScribePersonalGenomeClient) client).parseHaplogroups(inputStream);
         assertNotNull(haplogroups);
-        assertEquals(2, haplogroups.size());
-        assertEquals("44aa40", haplogroups.get(0).getProfileId());
-        assertEquals("p256", haplogroups.get(0).getPaternal());
-        assertEquals("r1a1", haplogroups.get(0).getMaternal());
-        assertEquals("d37b1d", haplogroups.get(1).getProfileId());
-        assertNull(haplogroups.get(1).getPaternal());
-        assertEquals("h18", haplogroups.get(1).getMaternal());
+        assertEquals(1, haplogroups.size());
+        assertEquals("c4480ba411939067", haplogroups.get(0).getProfileId());
+        assertEquals("D2a1", haplogroups.get(0).getPaternal());
+        assertEquals("D4e2", haplogroups.get(0).getMaternal());
+        assertEquals(1, haplogroups.get(0).getPaternalTerminalSnps().size());
+        assertEquals("i3000015", haplogroups.get(0).getPaternalTerminalSnps().get(0).getRsid());
+        assertEquals("M125", haplogroups.get(0).getPaternalTerminalSnps().get(0).getSnp());
+        assertEquals(2, haplogroups.get(0).getMaternalTerminalSnps().size());
+        assertEquals("i3001424", haplogroups.get(0).getMaternalTerminalSnps().get(0).getRsid());
+        assertEquals("15874", haplogroups.get(0).getMaternalTerminalSnps().get(0).getRcrsPosition());
+        assertEquals("i5050411", haplogroups.get(0).getMaternalTerminalSnps().get(1).getRsid());
+        assertEquals("15874", haplogroups.get(0).getMaternalTerminalSnps().get(1).getRcrsPosition());
     }
 
     @Test

@@ -26,34 +26,52 @@ package com.github.heuermh.personalgenome.client;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
+import org.junit.Before;
 import org.junit.Test;
+
+import com.google.common.collect.ImmutableList;
 
 /**
  * Unit test for Haplogroup.
  */
 public final class HaplogroupTest {
+    private MaternalTerminalSnp maternalTerminalSnp;
+    private PaternalTerminalSnp paternalTerminalSnp;
+
+    @Before
+    public void setUp() {
+        paternalTerminalSnp = new PaternalTerminalSnp("i3000015", "M125");
+        maternalTerminalSnp = new MaternalTerminalSnp("i3001424", "15874");
+    }
 
     @Test(expected=NullPointerException.class)
     public void testConstructorNullProfileId() {
-        new Haplogroup(null, "p256", "r1a1");
+        new Haplogroup(null, "p256", "r1a1", ImmutableList.of(paternalTerminalSnp), ImmutableList.of(maternalTerminalSnp));
     }
 
     @Test
     public void testConstructorNullPaternal() {
-        assertNotNull(new Haplogroup("profileId", null, "r1a1"));
+        assertNotNull(new Haplogroup("profileId", null, "r1a1", ImmutableList.of(paternalTerminalSnp), ImmutableList.of(maternalTerminalSnp)));
     }
 
     @Test(expected=NullPointerException.class)
     public void testConstructorNullMaternal() {
-        new Haplogroup("profileId", "p256", null);
+        new Haplogroup("profileId", "p256", null, ImmutableList.of(paternalTerminalSnp), ImmutableList.of(maternalTerminalSnp));
+    }
+
+    @Test(expected=NullPointerException.class)
+    public void testConstructorNullMaternalTerminalSnps() {
+        new Haplogroup("profileId", "p256", "r1a1", ImmutableList.of(paternalTerminalSnp), null);
     }
 
     @Test
     public void testConstructor() {
-        Haplogroup haplogroup = new Haplogroup("profileId", "p256", "r1a1");
+        Haplogroup haplogroup = new Haplogroup("profileId", "p256", "r1a1", ImmutableList.of(paternalTerminalSnp), ImmutableList.of(maternalTerminalSnp));
         assertNotNull(haplogroup);
         assertEquals("profileId", haplogroup.getProfileId());
         assertEquals("p256", haplogroup.getPaternal());
         assertEquals("r1a1", haplogroup.getMaternal());
+        assertEquals(paternalTerminalSnp, haplogroup.getPaternalTerminalSnps().get(0));
+        assertEquals(maternalTerminalSnp, haplogroup.getMaternalTerminalSnps().get(0));
     }
 }

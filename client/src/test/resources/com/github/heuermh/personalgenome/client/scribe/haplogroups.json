@@ -1,2 +1,23 @@
-[{"paternal": "p256", "maternal": "r1a1", "id": "44aa40"},
- {"paternal": null, "maternal": "h18", "id": "d37b1d"}]
+[
+    {
+        "maternal_terminal_snps": [
+            {
+                "rsid": "i3001424",
+                "rcrs_position": "15874"
+            },
+            {
+                "rsid": "i5050411",
+                "rcrs_position": "15874"
+            }
+        ],
+        "paternal_terminal_snps": [
+            {
+                "rsid": "i3000015",
+                "snp": "M125"
+            }
+        ],
+        "maternal": "D4e2",
+        "id": "c4480ba411939067",
+        "paternal": "D2a1"
+    }
+]
