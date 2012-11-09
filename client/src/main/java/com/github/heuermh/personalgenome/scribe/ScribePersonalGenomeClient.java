@@ -39,11 +39,16 @@ import com.fasterxml.jackson.core.JsonToken;
 
 import com.google.common.base.Joiner;
 
+import com.github.heuermh.personalgenome.client.AccessDeniedException;
 import com.github.heuermh.personalgenome.client.Genotype;
 import com.github.heuermh.personalgenome.client.Haplogroup;
+import com.github.heuermh.personalgenome.client.InvalidClientException;
+import com.github.heuermh.personalgenome.client.InvalidRequestException;
+import com.github.heuermh.personalgenome.client.InvalidScopeException;
 import com.github.heuermh.personalgenome.client.MaternalTerminalSnp;
 import com.github.heuermh.personalgenome.client.PaternalTerminalSnp;
 import com.github.heuermh.personalgenome.client.PersonalGenomeClient;
+import com.github.heuermh.personalgenome.client.PersonalGenomeClientException;
 import com.github.heuermh.personalgenome.client.Profile;
 import com.github.heuermh.personalgenome.client.ProfileName;
 import com.github.heuermh.personalgenome.client.User;
@@ -95,7 +100,7 @@ public final class ScribePersonalGenomeClient implements PersonalGenomeClient {
             return parseUser(response.getStream());
         }
         logger.warn("could not call user, response code " + code);
-        return null;
+        throw parseException(response.getStream());
     }
 
     @Override
@@ -109,7 +114,7 @@ public final class ScribePersonalGenomeClient implements PersonalGenomeClient {
             return parseNames(response.getStream());
         }
         logger.warn("could not call names, response code " + code);
-        return null;
+        throw parseException(response.getStream());
     }
 
     @Override
@@ -123,7 +128,7 @@ public final class ScribePersonalGenomeClient implements PersonalGenomeClient {
             return parseHaplogroups(response.getStream());
         }
         logger.warn("could not call haplogroups, response code " + code);
-        return null;
+        throw parseException(response.getStream());
     }
 
     @Override
@@ -143,6 +148,59 @@ public final class ScribePersonalGenomeClient implements PersonalGenomeClient {
         request.addHeader("Authorization", String.format("Bearer %s", accessToken));
         service.signRequest(accessToken, request);
         return request;
+    }
+
+    PersonalGenomeClientException parseException(final InputStream inputStream) {
+        JsonParser parser = null;
+        try {
+            parser = jsonFactory.createJsonParser(inputStream);
+            parser.nextToken();
+
+            String error = null;
+            String errorDescription = null;
+            while (parser.nextToken() != JsonToken.END_OBJECT) {
+                String field = parser.getCurrentName();
+                parser.nextToken();
+
+                if ("error".equals(field)) {
+                    error = parser.getText();
+                }
+                else if ("error_description".equals(field)) {
+                    errorDescription = parser.getText();
+                }
+            }
+            if ("access_denied".equals(error)) {
+                return new AccessDeniedException(errorDescription);
+            }
+            else if ("invalid_client".equals(error)) {
+                return new InvalidClientException(errorDescription);
+            }
+            else if ("invalid_request".equals(error)) {
+                return new InvalidRequestException(errorDescription);
+            }
+            else if ("invalid_scope".equals(error)) {
+                return new InvalidScopeException(errorDescription);
+            }
+            return new PersonalGenomeClientException(errorDescription);
+        }
+        catch (IOException e) {
+            logger.warn("could not parse exception", e);
+        }
+        finally {
+            try {
+                inputStream.close();
+            }
+            catch (Exception e) {
+                // ignored
+            }
+            try {
+                parser.close();
+            }
+            catch (Exception e) {
+                // ignored
+            }
+        }
+        return new PersonalGenomeClientException("unknown error");
     }
 
     User parseUser(final InputStream inputStream) {
@@ -367,7 +425,7 @@ public final class ScribePersonalGenomeClient implements PersonalGenomeClient {
             return parseGenotypes(response.getStream());
         }
         logger.warn("could not call genotype, response code " + code);
-        return null;
+        throw parseException(response.getStream());
     }
 
     List<Genotype> parseGenotypes(final InputStream inputStream) {

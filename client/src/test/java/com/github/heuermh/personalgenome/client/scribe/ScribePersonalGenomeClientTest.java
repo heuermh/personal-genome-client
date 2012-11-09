@@ -39,9 +39,14 @@ import java.util.List;
 import com.fasterxml.jackson.core.JsonFactory;
 
 import com.github.heuermh.personalgenome.client.AbstractPersonalGenomeClientTest;
+import com.github.heuermh.personalgenome.client.AccessDeniedException;
 import com.github.heuermh.personalgenome.client.Haplogroup;
+import com.github.heuermh.personalgenome.client.InvalidClientException;
+import com.github.heuermh.personalgenome.client.InvalidRequestException;
+import com.github.heuermh.personalgenome.client.InvalidScopeException;
 import com.github.heuermh.personalgenome.client.Genotype;
 import com.github.heuermh.personalgenome.client.PersonalGenomeClient;
+import com.github.heuermh.personalgenome.client.PersonalGenomeClientException;
 import com.github.heuermh.personalgenome.client.User;
 import com.github.heuermh.personalgenome.client.UserName;
 
@@ -89,6 +94,50 @@ public final class ScribePersonalGenomeClientTest extends AbstractPersonalGenome
         assertNotNull(request);
         assertTrue(request.getHeaders().containsKey("Authorization"));
         verify(service).signRequest(eq(accessToken), any(OAuthRequest.class));
+    }
+
+    @Test
+    public void testParseAccessDeniedException() {
+        InputStream inputStream = getClass().getResourceAsStream("accessDenied.json");
+        PersonalGenomeClientException exception = ((ScribePersonalGenomeClient) client).parseException(inputStream);
+        assertNotNull(exception);
+        assertTrue(exception instanceof AccessDeniedException);
+        assertEquals("error description", exception.getMessage());
+    }
+
+    @Test
+    public void testParseInvalidClientException() {
+        InputStream inputStream = getClass().getResourceAsStream("invalidClient.json");
+        PersonalGenomeClientException exception = ((ScribePersonalGenomeClient) client).parseException(inputStream);
+        assertNotNull(exception);
+        assertTrue(exception instanceof InvalidClientException);
+        assertEquals("error description", exception.getMessage());
+    }
+
+    @Test
+    public void testParseInvalidRequestException() {
+        InputStream inputStream = getClass().getResourceAsStream("invalidRequest.json");
+        PersonalGenomeClientException exception = ((ScribePersonalGenomeClient) client).parseException(inputStream);
+        assertNotNull(exception);
+        assertTrue(exception instanceof InvalidRequestException);
+        assertEquals("error description", exception.getMessage());
+    }
+
+    @Test
+    public void testParseInvalidScopeException() {
+        InputStream inputStream = getClass().getResourceAsStream("invalidScope.json");
+        PersonalGenomeClientException exception = ((ScribePersonalGenomeClient) client).parseException(inputStream);
+        assertNotNull(exception);
+        assertTrue(exception instanceof InvalidScopeException);
+        assertEquals("error description", exception.getMessage());
+    }
+
+    @Test
+    public void testParseUnknownException() {
+        InputStream inputStream = getClass().getResourceAsStream("unknown.json");
+        PersonalGenomeClientException exception = ((ScribePersonalGenomeClient) client).parseException(inputStream);
+        assertNotNull(exception);
+        assertEquals("error description", exception.getMessage());
     }
 
     @Test
