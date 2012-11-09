@@ -3,6 +3,8 @@ personal-genome-client
 
 Java client for the 23andMe Personal Genome API.
 
+"!https://travis-ci.org/heuermh/personal-genome-client.png!":https://travis-ci.org/heuermh/personal-genome-client
+
 
 ###Hacking personal-genome-client
 
