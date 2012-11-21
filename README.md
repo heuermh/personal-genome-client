@@ -76,6 +76,7 @@ in a browser.
         System.out.println("      rsid: " + maternalTerminalSnp.getRsid());
         System.out.println("      rCRS position: " + maternalTerminalSnp.getRcrsPosition());
       }
+    }
     
     List<Genotype> genotypes = client.genotypes("rs1234", "rs2345");
     System.out.println(genotypes.size() + " genotypes:");
