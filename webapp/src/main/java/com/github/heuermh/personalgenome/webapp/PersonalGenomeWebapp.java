@@ -65,7 +65,7 @@ public final class PersonalGenomeWebapp {
     public static void main(final String[] args) {
         setPort(8080);
 
-        logger.trace("initialization start...");
+        logger.info("initialization start...");
 
         final Injector injector = Guice.createInjector(new ParameterModule(), new ScribeModule());
         final OAuthService service = injector.getInstance(OAuthService.class);
@@ -74,10 +74,10 @@ public final class PersonalGenomeWebapp {
         get(new Route("/") {
                 @Override
                 public Object handle(final Request request, final Response response) {
-                    logger.trace("get /");
+                    logger.info("get /");
 
                     String authorizationUrl = service.getAuthorizationUrl(EMPTY_TOKEN);
-                    logger.trace("received authorization url " + authorizationUrl);
+                    logger.info("received authorization url " + authorizationUrl);
 
                     return "<html><p>Click <a href=\"" + authorizationUrl + "\">" + authorizationUrl + "</a> to authorize.</p></html>";
                 }
@@ -86,25 +86,26 @@ public final class PersonalGenomeWebapp {
         get(new Route("/after-auth-landing/") {
                 @Override
                 public Object handle(final Request request, final Response response) {
-                    logger.trace("get /after-auth-landing/");
+                    logger.info("get /after-auth-landing/");
 
-                    String authorizationCode = request.params("code");
+                    String authorizationCode = request.queryParams("code");
+                    logger.info("received authorization code " + authorizationCode);
+
                     Verifier verifier = new Verifier(authorizationCode);
-
                     Token accessToken = service.getAccessToken(EMPTY_TOKEN, verifier);
-                    logger.trace("received access token " + accessToken);
+                    logger.info("received access token " + accessToken);
 
                     PersonalGenomeClient client = new ScribePersonalGenomeClient(accessToken, service, jsonFactory);
 
-                    // requires user in scope
+                    // requires basic scope
                     User user = client.user();
-                    logger.trace("retreived user id " + user.getId());
+                    logger.info("retrieved user id " + user.getId());
 
                     return "<html><p><b>Authorization code:</b> " + authorizationCode + "</p><p><b>Access token:</b> " + accessToken + "</p><p><b>User:</b> " + user.getId() + "</p></html>";
                 }
             });
 
-        logger.trace("initialization complete");
+        logger.info("initialization complete");
     }
 
     /**
