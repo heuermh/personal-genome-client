@@ -27,7 +27,11 @@ To build demo webapp
 
 To run demo webapp, your 23andMe Personal Genome API client details must be provided as command line system properties
 
-    $ java -DapiKey=apiKey -DapiSecret=apiSecret -Dcallback=http://localhost:8080/after-auth-landing/ -Dscope=scope -jar 
+    $ java -DapiKey=apiKey \
+           -DapiSecret=apiSecret \
+           -Dcallback=http://localhost:8080/after-auth-landing/ \
+           -Dscope=scope \
+           -jar target/personal-genome-webapp-1.0-SNAPSHOT-jar-with-dependencies.jar 
 
 
 Open
