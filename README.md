@@ -91,3 +91,10 @@ in a browser.
         System.out.println("      " + entry.getKey() + ": " + entry.getValue());
       }
     }
+
+    for (Profile profile : user.getProfiles()) {
+      Genome genome = client.genome(profile.getId());
+      System.out.println("   profile id: " + genome.getProfileId());
+      int length = genomes.getValues().length();
+      System.out.println("   values: " + (length < 32) ? genomes.getValues() : genomes.getValues().substring(0, 32) + "...")
+    }
