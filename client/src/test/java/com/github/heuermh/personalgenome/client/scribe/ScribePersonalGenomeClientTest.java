@@ -44,6 +44,7 @@ import com.github.heuermh.personalgenome.client.Haplogroup;
 import com.github.heuermh.personalgenome.client.InvalidClientException;
 import com.github.heuermh.personalgenome.client.InvalidRequestException;
 import com.github.heuermh.personalgenome.client.InvalidScopeException;
+import com.github.heuermh.personalgenome.client.Genome;
 import com.github.heuermh.personalgenome.client.Genotype;
 import com.github.heuermh.personalgenome.client.PersonalGenomeClient;
 import com.github.heuermh.personalgenome.client.PersonalGenomeClientException;
@@ -201,5 +202,14 @@ public final class ScribePersonalGenomeClientTest extends AbstractPersonalGenome
         assertEquals("d37b1d", genotypes.get(1).getProfileId());
         assertEquals("AA", genotypes.get(1).getValues().get("rs3094315"));
         assertEquals("TT", genotypes.get(1).getValues().get("rs3737728"));
+    }
+
+    @Test
+    public void testParseGenomes() {
+        InputStream inputStream = getClass().getResourceAsStream("genomes.json");
+        Genome genome = ((ScribePersonalGenomeClient) client).parseGenomes(inputStream);
+        assertNotNull(genome);
+        assertEquals("c4480ba411939067", genome.getProfileId());
+        assertEquals("ACTAGTAG__TTGADDAAIICCTTDDTT", genome.getValues());
     }
 }

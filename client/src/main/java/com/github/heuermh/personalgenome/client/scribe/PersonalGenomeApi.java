@@ -39,7 +39,6 @@ import org.scribe.utils.OAuthEncoder;
  * Personal genome API.
  */
 public final class PersonalGenomeApi extends DefaultApi20 {
-    //private static final String ACCESS_TOKEN_URL = "https://api.23andme.com/token?grant_type=authorization_code";
     private static final String ACCESS_TOKEN_URL = "https://api.23andme.com/token";
     private static final String AUTHORIZE_URL = "https://api.23andme.com/authorize?client_id=%s&response_type=code&redirect_uri=%s&scope=%s";
 

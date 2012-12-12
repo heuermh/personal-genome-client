@@ -40,6 +40,7 @@ import com.fasterxml.jackson.core.JsonToken;
 import com.google.common.base.Joiner;
 
 import com.github.heuermh.personalgenome.client.AccessDeniedException;
+import com.github.heuermh.personalgenome.client.Genome;
 import com.github.heuermh.personalgenome.client.Genotype;
 import com.github.heuermh.personalgenome.client.Haplogroup;
 import com.github.heuermh.personalgenome.client.InvalidClientException;
@@ -78,6 +79,7 @@ public final class ScribePersonalGenomeClient implements PersonalGenomeClient {
     private static final String NAMES_URL = "https://api.23andme.com/1/names";
     private static final String HAPLOGROUPS_URL = "https://api.23andme.com/1/haplogroups";
     private static final String GENOTYPE_URL = "https://api.23andme.com/1/genotype/?locations=%s";
+    private static final String GENOMES_URL = "https://api.23andme.com/1/genomes/%s/";
 
     //@Inject
     public ScribePersonalGenomeClient(final Token accessToken, final OAuthService service, final JsonFactory jsonFactory) {
@@ -141,6 +143,22 @@ public final class ScribePersonalGenomeClient implements PersonalGenomeClient {
     public List<Genotype> genotypes(final Iterable<String> locations) {
         checkNotNull(locations);
         return genotypesWithScope(Joiner.on(" ").join(locations));
+    }
+
+    @Override
+    public Genome genome(final String profileId) {
+        checkNotNull(profileId);
+        // todo: URL encode and/or otherwise sanitize profileId?
+        OAuthRequest request = createAndSignRequest(String.format(GENOMES_URL, profileId));
+        Response response = request.send();
+        int code = response.getCode();
+
+        if (code == 200) {
+            logger.trace("genomes call ok");
+            return parseGenomes(response.getStream());
+        }
+        logger.warn("could not call genomes, response code " + code);
+        throw parseException(response.getStream());
     }
 
     OAuthRequest createAndSignRequest(final String url) {
@@ -461,6 +479,47 @@ public final class ScribePersonalGenomeClient implements PersonalGenomeClient {
         }
         catch (IOException e) {
             logger.warn("could not parse genotypes");
+        }
+        finally {
+            try {
+                inputStream.close();
+            }
+            catch (Exception e) {
+                // ignored
+            }
+            try {
+                parser.close();
+            }
+            catch (Exception e) {
+                // ignored
+            }
+        }
+        return null;
+    }
+
+    Genome parseGenomes(final InputStream inputStream) {
+        JsonParser parser = null;
+        try {
+            parser = jsonFactory.createJsonParser(inputStream);
+            parser.nextToken();
+
+            String id = null;
+            String values = null;
+            while (parser.nextToken() != JsonToken.END_OBJECT) {
+                String field = parser.getCurrentName();
+                parser.nextToken();
+
+                if ("id".equals(field)) {
+                    id = parser.getText();
+                }
+                else if ("genome".equals(field)) {
+                    values = parser.getText();
+                }
+            }
+            return new Genome(id, values);
+        }
+        catch (IOException e) {
+            logger.warn("could not parse genomes", e);
         }
         finally {
             try {
