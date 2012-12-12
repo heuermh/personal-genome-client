@@ -25,7 +25,17 @@ package com.github.heuermh.personalgenome.client;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.zip.GZIPInputStream;
+
 import javax.annotation.concurrent.Immutable;
+
+import com.google.common.collect.ImmutableMap;
 
 /**
  * Genome.
@@ -34,6 +44,35 @@ import javax.annotation.concurrent.Immutable;
 public final class Genome {
     private final String profileId;
     private final String values;
+    private static final Map<String, Integer> LOCATIONS;
+
+    static {
+        BufferedReader reader = null;
+        HashMap<String, Integer> map = new HashMap<String, Integer>(1200000);
+        try {
+            reader = new BufferedReader(new InputStreamReader(new GZIPInputStream(Genome.class.getResourceAsStream("snps.data.gz"))));
+            while (reader.ready()) {
+                String line = reader.readLine();
+                if (line == null) {
+                    break;
+                }
+                String[] tokens = line.split("\t");
+                map.put(tokens[0], Integer.parseInt(tokens[1]) * 2);
+            }
+        }
+        catch (IOException e) {
+            // ignore
+        }
+        finally {
+            try {
+                reader.close();
+            }
+            catch (Exception e) {
+                // ignore
+            }
+        }
+        LOCATIONS = ImmutableMap.copyOf(map);
+    }
 
     public Genome(final String profileId, final String values) {
         checkNotNull(profileId);
@@ -48,5 +87,35 @@ public final class Genome {
 
     public String getValues() {
         return values;
+    }
+
+    public Genotype asGenotype(final String... locations) {
+        checkNotNull(locations);
+        Map<String, String> genotypeValues = new HashMap<String, String>(locations.length);
+        for (String location : locations) {
+            checkNotNull(location);
+            if (LOCATIONS.containsKey(location)) {
+                int index = LOCATIONS.get(location);
+                if (index < values.length() - 1) {
+                    genotypeValues.put(location, values.substring(index, index + 2));
+                }
+            }
+        }
+        return new Genotype(profileId, genotypeValues);
+    }
+
+    public Genotype asGenotype(final Iterable<String> locations) {
+        checkNotNull(locations);
+        Map<String, String> genotypeValues = new HashMap<String, String>();
+        for (String location : locations) {
+            checkNotNull(location);
+            if (LOCATIONS.containsKey(location)) {
+                int index = LOCATIONS.get(location);
+                if (index < values.length() - 1) {
+                    genotypeValues.put(location, values.substring(index, index + 2));
+                }
+            }
+        }
+        return new Genotype(profileId, genotypeValues);
     }
 }
