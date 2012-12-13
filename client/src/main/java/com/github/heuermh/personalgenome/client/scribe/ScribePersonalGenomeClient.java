@@ -163,7 +163,7 @@ public final class ScribePersonalGenomeClient implements PersonalGenomeClient {
 
     OAuthRequest createAndSignRequest(final String url) {
         OAuthRequest request = new OAuthRequest(Verb.GET, url);
-        request.addHeader("Authorization", String.format("Bearer %s", accessToken));
+        request.addHeader("Authorization", String.format("Bearer %s", accessToken.getToken()));
         service.signRequest(accessToken, request);
         return request;
     }

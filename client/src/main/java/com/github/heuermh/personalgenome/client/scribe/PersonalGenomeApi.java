@@ -24,6 +24,8 @@
 package com.github.heuermh.personalgenome.client.scribe;
 
 import org.scribe.builder.api.DefaultApi20;
+import org.scribe.extractors.AccessTokenExtractor;
+import org.scribe.extractors.JsonTokenExtractor;
 import org.scribe.model.OAuthConfig;
 import org.scribe.model.OAuthConstants;
 import org.scribe.model.OAuthRequest;
@@ -54,7 +56,12 @@ public final class PersonalGenomeApi extends DefaultApi20 {
 
     @Override
     public String getAuthorizationUrl(final OAuthConfig config) {
-        return String.format(AUTHORIZE_URL, config.getApiKey(), OAuthEncoder.encode(config.getCallback()), config.getScope());
+        return String.format(AUTHORIZE_URL, config.getApiKey(), config.getCallback(), config.getScope());
+    }
+
+    @Override
+    public AccessTokenExtractor getAccessTokenExtractor() {
+        return new JsonTokenExtractor();
     }
 
     @Override
@@ -64,18 +71,12 @@ public final class PersonalGenomeApi extends DefaultApi20 {
             public Token getAccessToken(final Token requestToken, final Verifier verifier)
             {
                 OAuthRequest request = new OAuthRequest(PersonalGenomeApi.this.getAccessTokenVerb(), PersonalGenomeApi.this.getAccessTokenEndpoint());
-                request.addQuerystringParameter(OAuthConstants.CLIENT_ID, config.getApiKey());
-                request.addQuerystringParameter(OAuthConstants.CLIENT_SECRET, config.getApiSecret());
-                request.addQuerystringParameter("grant_type", "authorization_code"); // todo:  move this to OAuth20ServiceImpl.java ?
+                request.addBodyParameter(OAuthConstants.CLIENT_ID, config.getApiKey());
+                request.addBodyParameter(OAuthConstants.CLIENT_SECRET, config.getApiSecret());
+                request.addQuerystringParameter("grant_type", "authorization_code");
                 request.addQuerystringParameter(OAuthConstants.CODE, verifier.getValue());
                 request.addQuerystringParameter(OAuthConstants.REDIRECT_URI, config.getCallback());
                 if(config.hasScope()) request.addQuerystringParameter(OAuthConstants.SCOPE, config.getScope());
-
-                System.out.println("request=" + request.toString());
-                System.out.println("headers=" + request.getHeaders().toString());
-                System.out.println("request queryStringParameters=" + request.getQueryStringParams().asOauthBaseString());
-                System.out.println("request queryStringParameters=" + request.getQueryStringParams().asFormUrlEncodedString());
-                System.out.println("request oauthParameters=" + request.getOauthParameters().toString());
 
                 Response response = request.send();
                 return PersonalGenomeApi.this.getAccessTokenExtractor().extract(response.getBody());
