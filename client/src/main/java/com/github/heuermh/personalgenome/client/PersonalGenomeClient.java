@@ -121,7 +121,7 @@ public interface PersonalGenomeClient {
     /**
      * Return the genome (packed string of SNP typings) for the specified profile.
      *
-     * <p>Scope required: <code>genomes</scope></p>
+     * <p>Scope required: <code>genomes</code></p>
      *
      * @param profileId identifier for profile associated with current user, must not be null
      * @return the genome for the specified profile
@@ -134,4 +134,21 @@ public interface PersonalGenomeClient {
      * @throws InvalidScopeException if the requested scope is invalid, unknown, or malformed
      */
     Genome genome(String profileId);
+
+    /**
+     * Return the ancestral background for each profile associated with the current user.
+     *
+     * <p>Scope required: <code>ancestry</code></p>
+     *
+     * @param threshold threshold, must be in the range <code>(0.5, 1.0)</code>, exclusive
+     * @return the ancestral background for each profile associated with the current user
+     *
+     * @throws AccessDeniedException if the resource owner or authorization server denied the request
+     * @throws InvalidClientException if client authentication failed (e.g. unknown client, no client credentials
+     *    included, multiple client credentials included, or unsupported credentials type)
+     * @throws InvalidRequestException if request is missing a required parameter, includes an unsupported parameter
+     *    or parameter value, or is otherwise malformed
+     * @throws InvalidScopeException if the requested scope is invalid, unknown, or malformed
+     */
+    List<Ancestry> ancestry(double threshold);
 }

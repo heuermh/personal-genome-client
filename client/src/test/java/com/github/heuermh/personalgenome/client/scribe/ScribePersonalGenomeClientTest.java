@@ -39,6 +39,7 @@ import java.util.List;
 import com.fasterxml.jackson.core.JsonFactory;
 
 import com.github.heuermh.personalgenome.client.AbstractPersonalGenomeClientTest;
+import com.github.heuermh.personalgenome.client.Ancestry;
 import com.github.heuermh.personalgenome.client.AccessDeniedException;
 import com.github.heuermh.personalgenome.client.Haplogroup;
 import com.github.heuermh.personalgenome.client.InvalidClientException;
@@ -211,5 +212,45 @@ public final class ScribePersonalGenomeClientTest extends AbstractPersonalGenome
         assertNotNull(genome);
         assertEquals("c4480ba411939067", genome.getProfileId());
         assertEquals("ACTAGTAG__TTGADDAAIICCTTDDTT", genome.getValues());
+    }
+
+    @Test
+    public void testParseAncestryFlat() {
+        InputStream inputStream = getClass().getResourceAsStream("ancestryFlat.json");
+        List<Ancestry> ancestries = ((ScribePersonalGenomeClient) client).parseAncestry(inputStream);
+        assertNotNull(ancestries);
+        assertEquals(2, ancestries.size());
+        for (Ancestry ancestry : ancestries) {
+            assertTrue("7ad467ea509080fb".equals(ancestry.getProfileId()) || "18974891hh1f3h".equals(ancestry.getProfileId()));
+        }
+    }
+
+    @Test
+    public void testParseAncestrySingleFlat() {
+        InputStream inputStream = getClass().getResourceAsStream("ancestrySingleFlat.json");
+        List<Ancestry> ancestries = ((ScribePersonalGenomeClient) client).parseAncestry(inputStream);
+        assertNotNull(ancestries);
+        assertEquals(1, ancestries.size());
+        Ancestry ancestry = ancestries.get(0);
+        assertNotNull(ancestry);
+        assertEquals("7ad467ea509080fb", ancestry.getProfileId());
+        assertEquals("Total", ancestry.getLabel());
+        assertEquals(1.0d, ancestry.getProportion(), 0.1d);
+        assertEquals(0.0d, ancestry.getUnassigned(), 0.1d);
+        assertNotNull(ancestry.getSubPopulations());
+        assertTrue(ancestry.getSubPopulations().isEmpty());
+    }
+
+    @Test
+    public void testParseAncestry() {
+        InputStream inputStream = getClass().getResourceAsStream("ancestry.json");
+        List<Ancestry> ancestries = ((ScribePersonalGenomeClient) client).parseAncestry(inputStream);
+        assertNotNull(ancestries);
+        assertEquals(2, ancestries.size());
+        for (Ancestry ancestry : ancestries) {
+            assertTrue("7ad467ea509080fb".equals(ancestry.getProfileId()) || "18974891hh1f3h".equals(ancestry.getProfileId()));
+
+            // todo:  sub populations
+        }
     }
 }

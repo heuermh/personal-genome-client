@@ -1,0 +1,22 @@
+[
+    {
+        "id": "7ad467ea509080fb",
+        "ancestry": {
+            "label": "Total",
+            "proportion": "1.0000",
+            "unassigned": "0.0000",
+            "sub_populations": [
+            ]
+        }
+    },
+    {
+        "id": "18974891hh1f3h",
+        "ancestry": {
+            "label": "Total",
+            "proportion": "1.0000",
+            "unassigned": "0.0000",
+            "sub_populations": [
+            ]
+        }
+    }
+]

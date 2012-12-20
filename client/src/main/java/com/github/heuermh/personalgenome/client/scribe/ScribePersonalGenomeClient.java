@@ -40,6 +40,7 @@ import com.fasterxml.jackson.core.JsonToken;
 import com.google.common.base.Joiner;
 
 import com.github.heuermh.personalgenome.client.AccessDeniedException;
+import com.github.heuermh.personalgenome.client.Ancestry;
 import com.github.heuermh.personalgenome.client.Genome;
 import com.github.heuermh.personalgenome.client.Genotype;
 import com.github.heuermh.personalgenome.client.Haplogroup;
@@ -80,6 +81,7 @@ public final class ScribePersonalGenomeClient implements PersonalGenomeClient {
     private static final String HAPLOGROUPS_URL = "https://api.23andme.com/1/haplogroups";
     private static final String GENOTYPE_URL = "https://api.23andme.com/1/genotype/?locations=%s";
     private static final String GENOMES_URL = "https://api.23andme.com/1/genomes/%s/";
+    private static final String ANCESTRY_URL = "https://api.23andme.com/1/ancestry/?threshold=%f";
 
     //@Inject
     public ScribePersonalGenomeClient(final Token accessToken, final OAuthService service, final JsonFactory jsonFactory) {
@@ -158,6 +160,23 @@ public final class ScribePersonalGenomeClient implements PersonalGenomeClient {
             return parseGenomes(response.getStream());
         }
         logger.warn("could not call genomes, response code " + code);
+        throw parseException(response.getStream());
+    }
+
+    @Override
+    public List<Ancestry> ancestry(final double threshold) {
+        if (threshold <= 0.5 || threshold >= 1.0) {
+            throw new IllegalArgumentException("threshold must be in the range (0.5, 1.0), exclusive");
+        }
+        OAuthRequest request = createAndSignRequest(String.format(ANCESTRY_URL, threshold));
+        Response response = request.send();
+        int code = response.getCode();
+
+        if (code == 200) {
+            logger.trace("ancestry call ok");
+            return parseAncestry(response.getStream());
+        }
+        logger.warn("could not call ancestry, response code " + code);
         throw parseException(response.getStream());
     }
 
@@ -517,6 +536,79 @@ public final class ScribePersonalGenomeClient implements PersonalGenomeClient {
                 }
             }
             return new Genome(id, values);
+        }
+        catch (IOException e) {
+            logger.warn("could not parse genomes", e);
+        }
+        finally {
+            try {
+                inputStream.close();
+            }
+            catch (Exception e) {
+                // ignored
+            }
+            try {
+                parser.close();
+            }
+            catch (Exception e) {
+                // ignored
+            }
+        }
+        return null;
+    }
+
+    List<Ancestry> parseAncestry(final InputStream inputStream) {
+        JsonParser parser = null;
+        try {
+            parser = jsonFactory.createJsonParser(inputStream);
+            parser.nextToken();
+
+            String id = null;
+            String label = null;
+            double proportion = 0.0d;
+            double unassigned = 0.0d;
+            List<Ancestry> ancestries = new ArrayList<Ancestry>();
+            List<Ancestry> subPopulations = new ArrayList<Ancestry>();
+            while (parser.nextToken() != JsonToken.END_ARRAY) {
+                while (parser.nextToken() != JsonToken.END_OBJECT) {
+                    String field = parser.getCurrentName();
+                    parser.nextToken();
+
+                    if ("id".equals(field)) {
+                        id = parser.getText();
+                    }
+                    else if ("ancestry".equals(field)) {
+                        while (parser.nextToken() != JsonToken.END_OBJECT) {
+                            String ancestryField = parser.getCurrentName();
+                            parser.nextToken();
+
+                            if ("label".equals(ancestryField)) {
+                                label = parser.getText();
+                            }
+                            else if ("proportion".equals(ancestryField)) {
+                                proportion = Double.parseDouble(parser.getText());
+                                //proportion = parser.getDoubleValue();
+                            }
+                            else if ("unassigned".equals(ancestryField)) {
+                                unassigned = Double.parseDouble(parser.getText());
+                                //unassigned = parser.getDoubleValue();
+                            }
+                            else if ("sub_populations".equals(ancestryField)) {
+                                // todo: recurse
+                                while (parser.nextToken() != JsonToken.END_ARRAY) {
+                                }
+                            }
+                        }
+                    }
+                }
+                Ancestry ancestry = new Ancestry(id, label, proportion, unassigned, subPopulations);
+                ancestries.add(ancestry);
+                id = null;
+                label = null;
+                proportion = 0.0d;
+                unassigned = 0.0d;
+            }
+            return ancestries;
         }
         catch (IOException e) {
             logger.warn("could not parse genomes", e);
