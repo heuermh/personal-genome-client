@@ -27,6 +27,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.eq;
@@ -248,9 +249,52 @@ public final class ScribePersonalGenomeClientTest extends AbstractPersonalGenome
         assertNotNull(ancestries);
         assertEquals(2, ancestries.size());
         for (Ancestry ancestry : ancestries) {
-            assertTrue("7ad467ea509080fb".equals(ancestry.getProfileId()) || "18974891hh1f3h".equals(ancestry.getProfileId()));
+            if ("7ad467ea509080fb".equals(ancestry.getProfileId())) {
+                assertEquals("Total", ancestry.getLabel());
+                assertEquals(1.0d, ancestry.getProportion(), 0.1d);
+                assertEquals(0.0d, ancestry.getUnassigned(), 0.1d);
+                assertNotNull(ancestry.getSubPopulations());
+                assertEquals(2, ancestry.getSubPopulations().size());
 
-            // todo:  sub populations
+                for (Ancestry subPopulation : ancestry.getSubPopulations()) {
+                    if ("Sub-Saharan African".equals(subPopulation.getLabel())) {
+                        assertEquals(0.8827d, subPopulation.getProportion(), 0.1d);
+                        assertEquals(0.0d, subPopulation.getUnassigned(), 0.1d);
+                        assertNotNull(subPopulation.getSubPopulations());
+                        assertTrue(subPopulation.getSubPopulations().isEmpty());
+                    }
+                    else if ("European".equals(subPopulation.getLabel())) {
+                        assertEquals(0.1773d, subPopulation.getProportion(), 0.1d);
+                        assertEquals(0.0193d, subPopulation.getUnassigned(), 0.1d);
+                        assertNotNull(subPopulation.getSubPopulations());
+                        assertEquals(1, subPopulation.getSubPopulations().size());
+
+                        Ancestry subSubPopulation = subPopulation.getSubPopulations().get(0);
+                        assertEquals("Northern European", subSubPopulation.getLabel());
+                        assertEquals(0.1579d, subSubPopulation.getProportion(), 0.1d);
+                        assertEquals(0.0725d, subSubPopulation.getUnassigned(), 0.1d);
+                        assertNotNull(subSubPopulation.getSubPopulations());
+                        assertEquals(1, subSubPopulation.getSubPopulations().size());
+
+                        Ancestry subSubSubPopulation = subSubPopulation.getSubPopulations().get(0);
+                        assertEquals("French and German", subSubSubPopulation.getLabel());
+                        assertEquals(0.1579d, subSubSubPopulation.getProportion(), 0.1d);
+                        assertEquals(0.0725d, subSubSubPopulation.getUnassigned(), 0.1d);
+                        assertNotNull(subSubSubPopulation.getSubPopulations());
+                        assertTrue(subSubSubPopulation.getSubPopulations().isEmpty());
+                    }
+                    else {
+                        fail("unexpected subpopulation label");
+                    }
+                }
+            }
+            else if ("18974891hh1f3h".equals(ancestry.getProfileId())) {
+                assertNotNull(ancestry.getSubPopulations());
+                assertTrue(ancestry.getSubPopulations().isEmpty());
+            }
+            else {
+                fail("unexpected profile id");
+            }
         }
     }
 }

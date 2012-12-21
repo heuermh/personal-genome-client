@@ -26,8 +26,11 @@ package com.github.heuermh.personalgenome.webapp;
 import static spark.Spark.get;
 import static spark.Spark.setPort;
 
+import java.util.List;
+
 import com.github.heuermh.personalgenome.client.PersonalGenomeClient;
 import com.github.heuermh.personalgenome.client.User;
+import com.github.heuermh.personalgenome.client.Genotype;
 
 import com.github.heuermh.personalgenome.client.scribe.ScribeModule;
 import com.github.heuermh.personalgenome.client.scribe.ScribePersonalGenomeClient;
@@ -98,10 +101,26 @@ public final class PersonalGenomeWebapp {
                     PersonalGenomeClient client = new ScribePersonalGenomeClient(accessToken, service, jsonFactory);
 
                     // requires basic scope
+                    /*
                     User user = client.user();
-                    logger.info("retrieved user id " + user.getId());
+                    logger.info("retrieved user id " + user.getId());                    
 
                     return "<html><p><b>Authorization code:</b> " + authorizationCode + "</p><p><b>Access token:</b> " + accessToken + "</p><p><b>User:</b> " + user.getId() + "</p></html>";
+                    */
+                    List<Genotype> genotypes = client.genotypes("rs41362547");
+                    logger.info("retrieved genotypes " + genotypes);
+
+                    StringBuilder sb = new StringBuilder();
+                    sb.append("<html>");
+                    for (Genotype genotype : genotypes)
+                    {
+                        sb.append("<p>");
+                        sb.append("<b>Profile id:</b> " + genotype.getProfileId());
+                        sb.append(" <b>Genotype:</b> " + genotype.getValues());
+                        sb.append("</p>");
+                    }
+                    sb.append("</html>");
+                    return sb.toString();
                 }
             });
 

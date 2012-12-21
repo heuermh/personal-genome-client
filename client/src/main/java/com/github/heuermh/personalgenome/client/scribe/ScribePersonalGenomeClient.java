@@ -557,6 +557,39 @@ public final class ScribePersonalGenomeClient implements PersonalGenomeClient {
         return null;
     }
 
+    List<Ancestry> parseSubPopulation(final String id, final List<Ancestry> ancestries, final JsonParser parser) throws IOException {
+        String label = null;
+        double proportion = 0.0d;
+        double unassigned = 0.0d;
+        List<Ancestry> subPopulations = new ArrayList<Ancestry>();
+        while (parser.nextToken() != JsonToken.END_ARRAY) {
+            while (parser.nextToken() != JsonToken.END_OBJECT) {
+                String field = parser.getCurrentName();
+                parser.nextToken();
+
+                if ("label".equals(field)) {
+                    label = parser.getText();
+                }
+                else if ("proportion".equals(field)) {
+                    proportion = Double.parseDouble(parser.getText());
+                }
+                else if ("unassigned".equals(field)) {
+                    unassigned = Double.parseDouble(parser.getText());
+                }
+                else if ("sub_populations".equals(field)) {
+                    subPopulations = parseSubPopulation(id, subPopulations, parser);
+                }
+            }
+            Ancestry ancestry = new Ancestry(id, label, proportion, unassigned, subPopulations);
+            ancestries.add(ancestry);
+            label = null;
+            proportion = 0.0d;
+            unassigned = 0.0d;
+            subPopulations.clear();
+        }
+        return ancestries;
+    }
+
     List<Ancestry> parseAncestry(final InputStream inputStream) {
         JsonParser parser = null;
         try {
@@ -587,31 +620,27 @@ public final class ScribePersonalGenomeClient implements PersonalGenomeClient {
                             }
                             else if ("proportion".equals(ancestryField)) {
                                 proportion = Double.parseDouble(parser.getText());
-                                //proportion = parser.getDoubleValue();
                             }
                             else if ("unassigned".equals(ancestryField)) {
                                 unassigned = Double.parseDouble(parser.getText());
-                                //unassigned = parser.getDoubleValue();
                             }
                             else if ("sub_populations".equals(ancestryField)) {
-                                // todo: recurse
-                                while (parser.nextToken() != JsonToken.END_ARRAY) {
-                                }
+                                subPopulations = parseSubPopulation(id, subPopulations, parser);
                             }
                         }
                     }
                 }
                 Ancestry ancestry = new Ancestry(id, label, proportion, unassigned, subPopulations);
                 ancestries.add(ancestry);
-                id = null;
                 label = null;
                 proportion = 0.0d;
                 unassigned = 0.0d;
+                subPopulations.clear();
             }
             return ancestries;
         }
         catch (IOException e) {
-            logger.warn("could not parse genomes", e);
+            logger.warn("could not parse ancestry", e);
         }
         finally {
             try {
