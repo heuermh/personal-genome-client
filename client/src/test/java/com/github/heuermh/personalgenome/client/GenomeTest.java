@@ -82,6 +82,20 @@ public final class GenomeTest {
 
     @Test
     public void testAsGenotype() {
+        StringBuilder sb = new StringBuilder();
+        for (String location : Genome.LOCATIONS.keySet()) {
+            sb.append("AC");
+        }
+        Genome genome = new Genome("profileId", sb.toString());
+        Genotype genotype = genome.asGenotype();
+        assertEquals(genome.getProfileId(), genotype.getProfileId());
+        for (String location : Genome.LOCATIONS.keySet()) {
+            assertEquals("AC", genotype.getValues().get(location));
+        }
+    }
+
+    @Test
+    public void testAsGenotypeLocations() {
         Genome genome = new Genome("profileId", "ACGT__");
         Genotype genotype = genome.asGenotype("rs41362547", "rs28358280", "rs3915952");
         assertEquals(genome.getProfileId(), genotype.getProfileId());

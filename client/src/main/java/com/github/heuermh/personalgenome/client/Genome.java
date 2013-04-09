@@ -44,7 +44,7 @@ import com.google.common.collect.ImmutableMap;
 public final class Genome {
     private final String profileId;
     private final String values;
-    private static final Map<String, Integer> LOCATIONS;
+    static final Map<String, Integer> LOCATIONS;
 
     static {
         BufferedReader reader = null;
@@ -87,6 +87,10 @@ public final class Genome {
 
     public String getValues() {
         return values;
+    }
+
+    public Genotype asGenotype() {
+        return asGenotype(LOCATIONS.keySet());
     }
 
     public Genotype asGenotype(final String... locations) {
