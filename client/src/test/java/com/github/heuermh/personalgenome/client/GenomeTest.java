@@ -83,13 +83,13 @@ public final class GenomeTest {
     @Test
     public void testAsGenotype() {
         StringBuilder sb = new StringBuilder();
-        for (String location : Genome.LOCATIONS.keySet()) {
+        for (String location : Locations.locations()) {
             sb.append("AC");
         }
         Genome genome = new Genome("profileId", sb.toString());
         Genotype genotype = genome.asGenotype();
         assertEquals(genome.getProfileId(), genotype.getProfileId());
-        for (String location : Genome.LOCATIONS.keySet()) {
+        for (String location : Locations.locations()) {
             assertEquals("AC", genotype.getValues().get(location));
         }
     }
