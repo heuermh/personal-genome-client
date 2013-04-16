@@ -11,7 +11,7 @@ Java client for the 23andMe Personal Genome API.
 Install
 
  * JDK 1.6 or later, http://openjdk.java.net/
- * Apache Maven 3.0.4 or later, http://maven.apache.org/
+ * Apache Maven 3.0.5 or later, http://maven.apache.org/
 
 
 To build
