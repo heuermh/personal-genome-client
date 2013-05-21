@@ -30,6 +30,7 @@ import java.io.IOException;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -41,6 +42,8 @@ import com.google.common.base.Joiner;
 
 import com.github.heuermh.personalgenome.client.AccessDeniedException;
 import com.github.heuermh.personalgenome.client.Ancestry;
+import com.github.heuermh.personalgenome.client.Carrier;
+import com.github.heuermh.personalgenome.client.DrugResponse;
 import com.github.heuermh.personalgenome.client.Genome;
 import com.github.heuermh.personalgenome.client.Genotype;
 import com.github.heuermh.personalgenome.client.Haplogroup;
@@ -53,6 +56,9 @@ import com.github.heuermh.personalgenome.client.PersonalGenomeClient;
 import com.github.heuermh.personalgenome.client.PersonalGenomeClientException;
 import com.github.heuermh.personalgenome.client.Profile;
 import com.github.heuermh.personalgenome.client.ProfileName;
+import com.github.heuermh.personalgenome.client.Relative;
+import com.github.heuermh.personalgenome.client.Risk;
+import com.github.heuermh.personalgenome.client.Trait;
 import com.github.heuermh.personalgenome.client.User;
 import com.github.heuermh.personalgenome.client.UserName;
 
@@ -77,11 +83,17 @@ public final class ScribePersonalGenomeClient implements PersonalGenomeClient {
     private final JsonFactory jsonFactory;
     private final Logger logger = LoggerFactory.getLogger(ScribePersonalGenomeClient.class);
     private static final String USER_URL = "https://api.23andme.com/1/user";
-    private static final String NAMES_URL = "https://api.23andme.com/1/names";
-    private static final String HAPLOGROUPS_URL = "https://api.23andme.com/1/haplogroups";
-    private static final String GENOTYPE_URL = "https://api.23andme.com/1/genotype/?locations=%s";
+    private static final String NAMES_URL = "https://api.23andme.com/1/names/%s/";
+    private static final String HAPLOGROUPS_URL = "https://api.23andme.com/1/haplogroups/%s/";
+    private static final String GENOTYPE_URL = "https://api.23andme.com/1/genotype/%s/?locations=%s";
     private static final String GENOMES_URL = "https://api.23andme.com/1/genomes/%s/";
-    private static final String ANCESTRY_URL = "https://api.23andme.com/1/ancestry/?threshold=%f";
+    private static final String ANCESTRY_URL = "https://api.23andme.com/1/ancestry/%s/?threshold=%f";
+    private static final String NEANDERTHAL_URL = "https://api.23andme.com/1/neanderthal/%s/";
+    private static final String RELATIVES_URL = "https://api.23andme.com/1/relatives/%s/?limit=%f&offset=%f";
+    private static final String RISKS_URL = "https://api.23andme.com/1/risks/%s/";
+    private static final String CARRIERS_URL = "https://api.23andme.com/1/carriers/%s/";
+    private static final String DRUG_RESPONSES_URL = "https://api.23andme.com/1/drug_responses/%s/";
+    private static final String TRAITS_URL = "https://api.23andme.com/1/traits/%s/";
 
     //@Inject
     public ScribePersonalGenomeClient(final Token accessToken, final OAuthService service, final JsonFactory jsonFactory) {
@@ -108,8 +120,9 @@ public final class ScribePersonalGenomeClient implements PersonalGenomeClient {
     }
 
     @Override
-    public UserName names() {
-        OAuthRequest request = createAndSignRequest(NAMES_URL);
+    public UserName names(final String profileId) {
+        checkNotNull(profileId);
+        OAuthRequest request = createAndSignRequest(String.format(NAMES_URL, profileId));
         Response response = request.send();
         int code = response.getCode();
 
@@ -122,8 +135,9 @@ public final class ScribePersonalGenomeClient implements PersonalGenomeClient {
     }
 
     @Override
-    public List<Haplogroup> haplogroups() {
-        OAuthRequest request = createAndSignRequest(HAPLOGROUPS_URL);
+    public Haplogroup haplogroups(final String profileId) {
+        checkNotNull(profileId);
+        OAuthRequest request = createAndSignRequest(String.format(HAPLOGROUPS_URL, profileId));
         Response response = request.send();
         int code = response.getCode();
 
@@ -136,21 +150,35 @@ public final class ScribePersonalGenomeClient implements PersonalGenomeClient {
     }
 
     @Override
-    public List<Genotype> genotypes(final String... locations) {
+    public Genotype genotypes(final String profileId, final String... locations) {
+        checkNotNull(profileId);
         checkNotNull(locations);
-        return genotypesWithScope(Joiner.on(" ").join(locations));
+        return genotypesWithScope(profileId, Joiner.on(" ").join(locations));
     }
 
     @Override
-    public List<Genotype> genotypes(final Iterable<String> locations) {
+    public Genotype genotypes(final String profileId, final Iterable<String> locations) {
+        checkNotNull(profileId);
         checkNotNull(locations);
-        return genotypesWithScope(Joiner.on(" ").join(locations));
+        return genotypesWithScope(profileId, Joiner.on(" ").join(locations));
+    }
+
+    Genotype genotypesWithScope(final String profileId, final String scope) {
+        OAuthRequest request = createAndSignRequest(String.format(GENOTYPE_URL, profileId, scope));
+        Response response = request.send();
+        int code = response.getCode();
+
+        if (code == 200) {
+            logger.trace("genotype call ok");
+            return parseGenotypes(response.getStream());
+        }
+        logger.warn("could not call genotype, response code " + code);
+        throw parseException(response.getStream());
     }
 
     @Override
     public Genome genome(final String profileId) {
         checkNotNull(profileId);
-        // todo: URL encode and/or otherwise sanitize profileId?
         OAuthRequest request = createAndSignRequest(String.format(GENOMES_URL, profileId));
         Response response = request.send();
         int code = response.getCode();
@@ -164,11 +192,12 @@ public final class ScribePersonalGenomeClient implements PersonalGenomeClient {
     }
 
     @Override
-    public List<Ancestry> ancestry(final double threshold) {
+    public Ancestry ancestry(final String profileId, final double threshold) {
+        checkNotNull(profileId);
         if (threshold <= 0.5 || threshold >= 1.0) {
             throw new IllegalArgumentException("threshold must be in the range (0.5, 1.0), exclusive");
         }
-        OAuthRequest request = createAndSignRequest(String.format(ANCESTRY_URL, threshold));
+        OAuthRequest request = createAndSignRequest(String.format(ANCESTRY_URL, profileId, threshold));
         Response response = request.send();
         int code = response.getCode();
 
@@ -177,6 +206,112 @@ public final class ScribePersonalGenomeClient implements PersonalGenomeClient {
             return parseAncestry(response.getStream());
         }
         logger.warn("could not call ancestry, response code " + code);
+        throw parseException(response.getStream());
+    }
+
+    @Override
+    public double neanderthalProportion(final String profileId) {
+        checkNotNull(profileId);
+        OAuthRequest request = createAndSignRequest(String.format(NEANDERTHAL_URL, profileId));
+        Response response = request.send();
+        int code = response.getCode();
+
+        if (code == 200) {
+            logger.trace("neanderthal proportion call ok");
+            return parseNeanderthalProportion(response.getStream());
+        }
+        logger.warn("could not call neanderthal proportion, response code " + code);
+        throw parseException(response.getStream());
+    }
+
+    @Override
+    public Iterator<Relative> relatives(final String profileId) {
+        checkNotNull(profileId);
+        OAuthRequest request = createAndSignRequest(String.format(RELATIVES_URL, profileId, 0, 100));
+        Response response = request.send();
+        int code = response.getCode();
+
+        if (code == 200) {
+            logger.trace("relatives call ok");
+            return parseRelatives(response.getStream()).iterator();
+        }
+        logger.warn("could not call relatives, response code " + code);
+        throw parseException(response.getStream());
+    }
+
+    @Override
+    public List<Relative> relatives(final String profileId, final int offset, final int limit) {
+        checkNotNull(profileId);
+        // note limit and offset are in a different order here
+        OAuthRequest request = createAndSignRequest(String.format(RELATIVES_URL, profileId, limit, offset));
+        Response response = request.send();
+        int code = response.getCode();
+
+        if (code == 200) {
+            logger.trace("relatives call ok");
+            return parseRelatives(response.getStream());
+        }
+        logger.warn("could not call relatives, response code " + code);
+        throw parseException(response.getStream());
+    }
+
+    @Override
+    public List<Risk> risks(final String profileId) {
+        checkNotNull(profileId);
+        OAuthRequest request = createAndSignRequest(String.format(RISKS_URL, profileId));
+        Response response = request.send();
+        int code = response.getCode();
+
+        if (code == 200) {
+            logger.trace("risks call ok");
+            return parseRisks(response.getStream());
+        }
+        logger.warn("could not call risks, response code " + code);
+        throw parseException(response.getStream());
+    }
+
+    @Override
+    public List<Carrier> carriers(final String profileId) {
+        checkNotNull(profileId);
+        OAuthRequest request = createAndSignRequest(String.format(CARRIERS_URL, profileId));
+        Response response = request.send();
+        int code = response.getCode();
+
+        if (code == 200) {
+            logger.trace("carriers call ok");
+            return parseCarriers(response.getStream());
+        }
+        logger.warn("could not call carriers, response code " + code);
+        throw parseException(response.getStream());
+    }
+
+    @Override
+    public List<DrugResponse> drugResponses(final String profileId) {
+        checkNotNull(profileId);
+        OAuthRequest request = createAndSignRequest(String.format(DRUG_RESPONSES_URL, profileId));
+        Response response = request.send();
+        int code = response.getCode();
+
+        if (code == 200) {
+            logger.trace("drug responses call ok");
+            return parseDrugResponses(response.getStream());
+        }
+        logger.warn("could not call drug responses, response code " + code);
+        throw parseException(response.getStream());
+    }
+
+    @Override
+    public List<Trait> traits(final String profileId) {
+        checkNotNull(profileId);
+        OAuthRequest request = createAndSignRequest(String.format(TRAITS_URL, profileId));
+        Response response = request.send();
+        int code = response.getCode();
+
+        if (code == 200) {
+            logger.trace("traits call ok");
+            return parseTraits(response.getStream());
+        }
+        logger.warn("could not call traits, response code " + code);
         throw parseException(response.getStream());
     }
 
@@ -362,7 +497,7 @@ public final class ScribePersonalGenomeClient implements PersonalGenomeClient {
         return null;
     }
 
-    List<Haplogroup> parseHaplogroups(final InputStream inputStream) {
+    Haplogroup parseHaplogroups(final InputStream inputStream) {
         JsonParser parser = null;
         try {
             parser = jsonFactory.createJsonParser(inputStream);
@@ -374,62 +509,56 @@ public final class ScribePersonalGenomeClient implements PersonalGenomeClient {
             String rsid = null;
             String rcrsPosition = null;
             String snp = null;
-            List<Haplogroup> haplogroups = new ArrayList<Haplogroup>();
             List<PaternalTerminalSnp> paternalTerminalSnps = new ArrayList<PaternalTerminalSnp>();
             List<MaternalTerminalSnp> maternalTerminalSnps = new ArrayList<MaternalTerminalSnp>();
 
-            while (parser.nextToken() != JsonToken.END_ARRAY) {
-                while (parser.nextToken() != JsonToken.END_OBJECT) {
-                    String field = parser.getCurrentName();
-                    parser.nextToken();
+            while (parser.nextToken() != JsonToken.END_OBJECT) {
+                String field = parser.getCurrentName();
+                parser.nextToken();
 
-                    if ("id".equals(field)) {
-                        id = parser.getText();
-                    }
-                    else if ("maternal".equals(field)) {
-                        maternal = parser.getText();
-                    }
-                    else if ("paternal".equals(field)) {
-                        paternal = "null" == parser.getText() ? null : parser.getText();
-                    }
-                    else if ("maternal_terminal_snps".equals(field)) {
-                        while (parser.nextToken() != JsonToken.END_ARRAY) {
-                            while (parser.nextToken() != JsonToken.END_OBJECT) {
-                                String maternalTerminalSnpsField = parser.getCurrentName();
-                                parser.nextToken();
+                if ("id".equals(field)) {
+                    id = parser.getText();
+                }
+                else if ("maternal".equals(field)) {
+                    maternal = parser.getText();
+                }
+                else if ("paternal".equals(field)) {
+                    paternal = "null" == parser.getText() ? null : parser.getText();
+                }
+                else if ("maternal_terminal_snps".equals(field)) {
+                    while (parser.nextToken() != JsonToken.END_ARRAY) {
+                        while (parser.nextToken() != JsonToken.END_OBJECT) {
+                            String maternalTerminalSnpsField = parser.getCurrentName();
+                            parser.nextToken();
 
-                                if ("rsid".equals(maternalTerminalSnpsField)) {
-                                    rsid = parser.getText();
-                                }
-                                else if ("rcrs_position".equals(maternalTerminalSnpsField)) {
-                                    rcrsPosition = parser.getText();
-                                }
+                            if ("rsid".equals(maternalTerminalSnpsField)) {
+                                rsid = parser.getText();
                             }
-                            maternalTerminalSnps.add(new MaternalTerminalSnp(rsid, rcrsPosition));
-                        }
-                    }
-                    else if ("paternal_terminal_snps".equals(field)) {
-                        while (parser.nextToken() != JsonToken.END_ARRAY) {
-                            while (parser.nextToken() != JsonToken.END_OBJECT) {
-                                String paternalTerminalSnpsField = parser.getCurrentName();
-                                parser.nextToken();
-
-                                if ("rsid".equals(paternalTerminalSnpsField)) {
-                                    rsid = parser.getText();
-                                }
-                                else if ("snp".equals(paternalTerminalSnpsField)) {
-                                    snp = parser.getText();
-                                }
+                            else if ("rcrs_position".equals(maternalTerminalSnpsField)) {
+                                rcrsPosition = parser.getText();
                             }
-                            paternalTerminalSnps.add(new PaternalTerminalSnp(rsid, snp));
                         }
+                        maternalTerminalSnps.add(new MaternalTerminalSnp(rsid, rcrsPosition));
                     }
                 }
-                haplogroups.add(new Haplogroup(id, paternal, maternal, paternalTerminalSnps, maternalTerminalSnps));
-                paternalTerminalSnps.clear();
-                maternalTerminalSnps.clear();
+                else if ("paternal_terminal_snps".equals(field)) {
+                    while (parser.nextToken() != JsonToken.END_ARRAY) {
+                        while (parser.nextToken() != JsonToken.END_OBJECT) {
+                            String paternalTerminalSnpsField = parser.getCurrentName();
+                            parser.nextToken();
+
+                            if ("rsid".equals(paternalTerminalSnpsField)) {
+                                rsid = parser.getText();
+                            }
+                            else if ("snp".equals(paternalTerminalSnpsField)) {
+                                snp = parser.getText();
+                            }
+                        }
+                        paternalTerminalSnps.add(new PaternalTerminalSnp(rsid, snp));
+                    }
+                }
             }
-            return haplogroups;
+            return new Haplogroup(id, paternal, maternal, paternalTerminalSnps, maternalTerminalSnps);
         }
         catch (IOException e) {
             logger.warn("could not parse haplogroups", e);
@@ -451,21 +580,7 @@ public final class ScribePersonalGenomeClient implements PersonalGenomeClient {
         return null;
     }
 
-    List<Genotype> genotypesWithScope(final String scope) {
-        // todo: URL encode and/or otherwise sanitize scope?
-        OAuthRequest request = createAndSignRequest(String.format(GENOTYPE_URL, scope));
-        Response response = request.send();
-        int code = response.getCode();
-
-        if (code == 200) {
-            logger.trace("genotype call ok");
-            return parseGenotypes(response.getStream());
-        }
-        logger.warn("could not call genotype, response code " + code);
-        throw parseException(response.getStream());
-    }
-
-    List<Genotype> parseGenotypes(final InputStream inputStream) {
+    Genotype parseGenotypes(final InputStream inputStream) {
         JsonParser parser = null;
         try {
             parser = jsonFactory.createJsonParser(inputStream);
@@ -475,26 +590,21 @@ public final class ScribePersonalGenomeClient implements PersonalGenomeClient {
             String location = null;
             String interpretation = null;
             Map<String, String> values = new HashMap<String, String>();
-            List<Genotype> genotypes = new ArrayList<Genotype>();
 
-            while (parser.nextToken() != JsonToken.END_ARRAY) {
-                while (parser.nextToken() != JsonToken.END_OBJECT) {
-                    String field = parser.getCurrentName();
-                    parser.nextToken();
+            while (parser.nextToken() != JsonToken.END_OBJECT) {
+                String field = parser.getCurrentName();
+                parser.nextToken();
 
-                    if ("id".equals(field)) {
-                        id = parser.getText();
-                    }
-                    else {
-                        location = field;
-                        interpretation = parser.getText();
-                        values.put(location, interpretation);
-                    }
+                if ("id".equals(field)) {
+                    id = parser.getText();
                 }
-                genotypes.add(new Genotype(id, values));
-                values.clear();
+                else {
+                    location = field;
+                    interpretation = parser.getText();
+                    values.put(location, interpretation);
+                }
             }
-            return genotypes;
+            return new Genotype(id, values);
         }
         catch (IOException e) {
             logger.warn("could not parse genotypes");
@@ -590,7 +700,7 @@ public final class ScribePersonalGenomeClient implements PersonalGenomeClient {
         return ancestries;
     }
 
-    List<Ancestry> parseAncestry(final InputStream inputStream) {
+    Ancestry parseAncestry(final InputStream inputStream) {
         JsonParser parser = null;
         try {
             parser = jsonFactory.createJsonParser(inputStream);
@@ -600,47 +710,211 @@ public final class ScribePersonalGenomeClient implements PersonalGenomeClient {
             String label = null;
             double proportion = 0.0d;
             double unassigned = 0.0d;
-            List<Ancestry> ancestries = new ArrayList<Ancestry>();
             List<Ancestry> subPopulations = new ArrayList<Ancestry>();
-            while (parser.nextToken() != JsonToken.END_ARRAY) {
-                while (parser.nextToken() != JsonToken.END_OBJECT) {
-                    String field = parser.getCurrentName();
-                    parser.nextToken();
+            while (parser.nextToken() != JsonToken.END_OBJECT) {
+                String field = parser.getCurrentName();
+                parser.nextToken();
 
-                    if ("id".equals(field)) {
-                        id = parser.getText();
-                    }
-                    else if ("ancestry".equals(field)) {
-                        while (parser.nextToken() != JsonToken.END_OBJECT) {
-                            String ancestryField = parser.getCurrentName();
-                            parser.nextToken();
+                if ("id".equals(field)) {
+                    id = parser.getText();
+                }
+                else if ("ancestry".equals(field)) {
+                    while (parser.nextToken() != JsonToken.END_OBJECT) {
+                        String ancestryField = parser.getCurrentName();
+                        parser.nextToken();
 
-                            if ("label".equals(ancestryField)) {
-                                label = parser.getText();
-                            }
-                            else if ("proportion".equals(ancestryField)) {
-                                proportion = Double.parseDouble(parser.getText());
-                            }
-                            else if ("unassigned".equals(ancestryField)) {
-                                unassigned = Double.parseDouble(parser.getText());
-                            }
-                            else if ("sub_populations".equals(ancestryField)) {
-                                subPopulations = parseSubPopulation(id, subPopulations, parser);
-                            }
+                        if ("label".equals(ancestryField)) {
+                            label = parser.getText();
+                        }
+                        else if ("proportion".equals(ancestryField)) {
+                            proportion = Double.parseDouble(parser.getText());
+                        }
+                        else if ("unassigned".equals(ancestryField)) {
+                            unassigned = Double.parseDouble(parser.getText());
+                        }
+                        else if ("sub_populations".equals(ancestryField)) {
+                            subPopulations = parseSubPopulation(id, subPopulations, parser);
                         }
                     }
                 }
-                Ancestry ancestry = new Ancestry(id, label, proportion, unassigned, subPopulations);
-                ancestries.add(ancestry);
-                label = null;
-                proportion = 0.0d;
-                unassigned = 0.0d;
-                subPopulations.clear();
             }
-            return ancestries;
+            return new Ancestry(id, label, proportion, unassigned, subPopulations);
         }
         catch (IOException e) {
             logger.warn("could not parse ancestry", e);
+        }
+        finally {
+            try {
+                inputStream.close();
+            }
+            catch (Exception e) {
+                // ignored
+            }
+            try {
+                parser.close();
+            }
+            catch (Exception e) {
+                // ignored
+            }
+        }
+        return null;
+    }
+
+    double parseNeanderthalProportion(final InputStream inputStream) {
+        JsonParser parser = null;
+        try {
+            parser = jsonFactory.createJsonParser(inputStream);
+            parser.nextToken();
+
+            return 1d;
+        }
+        catch (IOException e) {
+            logger.warn("could not parse neanderthal proportion", e);
+        }
+        finally {
+            try {
+                inputStream.close();
+            }
+            catch (Exception e) {
+                // ignored
+            }
+            try {
+                parser.close();
+            }
+            catch (Exception e) {
+                // ignored
+            }
+        }
+        return -1d;
+    }
+
+    List<Relative> parseRelatives(final InputStream inputStream) {
+        JsonParser parser = null;
+        try {
+            parser = jsonFactory.createJsonParser(inputStream);
+            parser.nextToken();
+
+            List<Relative> relatives = new ArrayList<Relative>();
+            return relatives;
+        }
+        catch (IOException e) {
+            logger.warn("could not parse relatives", e);
+        }
+        finally {
+            try {
+                inputStream.close();
+            }
+            catch (Exception e) {
+                // ignored
+            }
+            try {
+                parser.close();
+            }
+            catch (Exception e) {
+                // ignored
+            }
+        }
+        return null;
+    }
+
+    List<Risk> parseRisks(final InputStream inputStream) {
+        JsonParser parser = null;
+        try {
+            parser = jsonFactory.createJsonParser(inputStream);
+            parser.nextToken();
+
+            List<Risk> risks = new ArrayList<Risk>();
+            return risks;
+        }
+        catch (IOException e) {
+            logger.warn("could not parse risks", e);
+        }
+        finally {
+            try {
+                inputStream.close();
+            }
+            catch (Exception e) {
+                // ignored
+            }
+            try {
+                parser.close();
+            }
+            catch (Exception e) {
+                // ignored
+            }
+        }
+        return null;
+    }
+
+    List<Carrier> parseCarriers(final InputStream inputStream) {
+        JsonParser parser = null;
+        try {
+            parser = jsonFactory.createJsonParser(inputStream);
+            parser.nextToken();
+
+            List<Carrier> carriers = new ArrayList<Carrier>();
+            return carriers;
+        }
+        catch (IOException e) {
+            logger.warn("could not parse carriers", e);
+        }
+        finally {
+            try {
+                inputStream.close();
+            }
+            catch (Exception e) {
+                // ignored
+            }
+            try {
+                parser.close();
+            }
+            catch (Exception e) {
+                // ignored
+            }
+        }
+        return null;
+    }
+
+    List<DrugResponse> parseDrugResponses(final InputStream inputStream) {
+        JsonParser parser = null;
+        try {
+            parser = jsonFactory.createJsonParser(inputStream);
+            parser.nextToken();
+
+            List<DrugResponse> drugResponses = new ArrayList<DrugResponse>();
+            return drugResponses;
+        }
+        catch (IOException e) {
+            logger.warn("could not parse drug responses", e);
+        }
+        finally {
+            try {
+                inputStream.close();
+            }
+            catch (Exception e) {
+                // ignored
+            }
+            try {
+                parser.close();
+            }
+            catch (Exception e) {
+                // ignored
+            }
+        }
+        return null;
+    }
+
+    List<Trait> parseTraits(final InputStream inputStream) {
+        JsonParser parser = null;
+        try {
+            parser = jsonFactory.createJsonParser(inputStream);
+            parser.nextToken();
+
+            List<Trait> traits = new ArrayList<Trait>();
+            return traits;
+        }
+        catch (IOException e) {
+            logger.warn("could not parse traits", e);
         }
         finally {
             try {

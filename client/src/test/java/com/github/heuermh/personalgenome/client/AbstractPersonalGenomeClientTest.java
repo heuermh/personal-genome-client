@@ -49,18 +49,28 @@ public abstract class AbstractPersonalGenomeClientTest {
     }
 
     @Test(expected=NullPointerException.class)
+    public void testNamesNullProfileId() {
+        client.names(null);
+    }
+
+    @Test(expected=NullPointerException.class)
+    public void testHaplogroupsNullProfileId() {
+        client.haplogroups(null);
+    }
+
+    @Test(expected=NullPointerException.class)
     public void testGenotypesNullLocations() {
-        client.genotypes((String) null);
+        client.genotypes("profileId", (String) null);
     }
 
     @Test(expected=NullPointerException.class)
     public void testGenotypesNullIterableLocations() {
-        client.genotypes((Iterable<String>) null);
+        client.genotypes("profileId", (Iterable<String>) null);
     }
 
     @Test(expected=NullPointerException.class)
     public void testGenotypesNullLocation() {
-        client.genotypes("rs1234", null, "rs2345");
+        client.genotypes("profileId", "rs1234", null, "rs2345");
     }
 
     @Test(expected=NullPointerException.class)
@@ -69,6 +79,61 @@ public abstract class AbstractPersonalGenomeClientTest {
         locations.add("rs1234");
         locations.add(null);
         locations.add("rs2345");
-        client.genotypes(locations);
+        client.genotypes("profileId", locations);
+    }
+
+    @Test(expected=NullPointerException.class)
+    public void testGenomeNullProfileId() {
+        client.genome(null);
+    }
+
+    @Test(expected=NullPointerException.class)
+    public void testAncestryNullProfileId() {
+        client.ancestry(null, 0.9d);
+    }
+
+    @Test(expected=IllegalArgumentException.class)
+    public void testAncestryThresholdTooSmall() {
+        client.ancestry("profileId", 0.4d);
+    }
+
+    @Test(expected=IllegalArgumentException.class)
+    public void testAncestryThresholdTooLarge() {
+        client.ancestry("profileId", 1.1d);
+    }
+
+    @Test(expected=NullPointerException.class)
+    public void testNeanderthalProportionNullProfileId() {
+        client.neanderthalProportion(null);
+    }
+
+    @Test(expected=NullPointerException.class)
+    public void testRelativesNullProfileId() {
+        client.relatives(null);
+    }
+
+    @Test(expected=NullPointerException.class)
+    public void testRelativesOffsetLimitNullProfileId() {
+        client.relatives(null, 0, 10);
+    }
+
+    @Test(expected=NullPointerException.class)
+    public void testCarriersNullProfileId() {
+        client.carriers(null);
+    }
+
+    @Test(expected=NullPointerException.class)
+    public void testRisksNullProfileId() {
+        client.risks(null);
+    }
+
+    @Test(expected=NullPointerException.class)
+    public void testDrugResponsesNullProfileId() {
+        client.drugResponses(null);
+    }
+
+    @Test(expected=NullPointerException.class)
+    public void testTraitsNullProfileId() {
+        client.traits(null);
     }
 }

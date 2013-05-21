@@ -42,6 +42,8 @@ import com.fasterxml.jackson.core.JsonFactory;
 import com.github.heuermh.personalgenome.client.AbstractPersonalGenomeClientTest;
 import com.github.heuermh.personalgenome.client.Ancestry;
 import com.github.heuermh.personalgenome.client.AccessDeniedException;
+import com.github.heuermh.personalgenome.client.Carrier;
+import com.github.heuermh.personalgenome.client.DrugResponse;
 import com.github.heuermh.personalgenome.client.Haplogroup;
 import com.github.heuermh.personalgenome.client.InvalidClientException;
 import com.github.heuermh.personalgenome.client.InvalidRequestException;
@@ -50,6 +52,9 @@ import com.github.heuermh.personalgenome.client.Genome;
 import com.github.heuermh.personalgenome.client.Genotype;
 import com.github.heuermh.personalgenome.client.PersonalGenomeClient;
 import com.github.heuermh.personalgenome.client.PersonalGenomeClientException;
+import com.github.heuermh.personalgenome.client.Relative;
+import com.github.heuermh.personalgenome.client.Risk;
+import com.github.heuermh.personalgenome.client.Trait;
 import com.github.heuermh.personalgenome.client.User;
 import com.github.heuermh.personalgenome.client.UserName;
 
@@ -176,34 +181,29 @@ public final class ScribePersonalGenomeClientTest extends AbstractPersonalGenome
     @Test
     public void testParseHaplogroups() {
         InputStream inputStream = getClass().getResourceAsStream("haplogroups.json");
-        List<Haplogroup> haplogroups = ((ScribePersonalGenomeClient) client).parseHaplogroups(inputStream);
-        assertNotNull(haplogroups);
-        assertEquals(1, haplogroups.size());
-        assertEquals("c4480ba411939067", haplogroups.get(0).getProfileId());
-        assertEquals("D2a1", haplogroups.get(0).getPaternal());
-        assertEquals("D4e2", haplogroups.get(0).getMaternal());
-        assertEquals(1, haplogroups.get(0).getPaternalTerminalSnps().size());
-        assertEquals("i3000015", haplogroups.get(0).getPaternalTerminalSnps().get(0).getRsid());
-        assertEquals("M125", haplogroups.get(0).getPaternalTerminalSnps().get(0).getSnp());
-        assertEquals(2, haplogroups.get(0).getMaternalTerminalSnps().size());
-        assertEquals("i3001424", haplogroups.get(0).getMaternalTerminalSnps().get(0).getRsid());
-        assertEquals("15874", haplogroups.get(0).getMaternalTerminalSnps().get(0).getRcrsPosition());
-        assertEquals("i5050411", haplogroups.get(0).getMaternalTerminalSnps().get(1).getRsid());
-        assertEquals("15874", haplogroups.get(0).getMaternalTerminalSnps().get(1).getRcrsPosition());
+        Haplogroup haplogroup = ((ScribePersonalGenomeClient) client).parseHaplogroups(inputStream);
+        assertNotNull(haplogroup);
+        assertEquals("c4480ba411939067", haplogroup.getProfileId());
+        assertEquals("D2a1", haplogroup.getPaternal());
+        assertEquals("D4e2", haplogroup.getMaternal());
+        assertEquals(1, haplogroup.getPaternalTerminalSnps().size());
+        assertEquals("i3000015", haplogroup.getPaternalTerminalSnps().get(0).getRsid());
+        assertEquals("M125", haplogroup.getPaternalTerminalSnps().get(0).getSnp());
+        assertEquals(2, haplogroup.getMaternalTerminalSnps().size());
+        assertEquals("i3001424", haplogroup.getMaternalTerminalSnps().get(0).getRsid());
+        assertEquals("15874", haplogroup.getMaternalTerminalSnps().get(0).getRcrsPosition());
+        assertEquals("i5050411", haplogroup.getMaternalTerminalSnps().get(1).getRsid());
+        assertEquals("15874", haplogroup.getMaternalTerminalSnps().get(1).getRcrsPosition());
     }
 
     @Test
     public void testParseGenotypes() {
         InputStream inputStream = getClass().getResourceAsStream("genotype.json");
-        List<Genotype> genotypes = ((ScribePersonalGenomeClient) client).parseGenotypes(inputStream);
-        assertNotNull(genotypes);
-        assertEquals(2, genotypes.size());
-        assertEquals("44aa40", genotypes.get(0).getProfileId());
-        assertEquals("AA", genotypes.get(0).getValues().get("rs3094315"));
-        assertEquals("TT", genotypes.get(0).getValues().get("rs3737728"));
-        assertEquals("d37b1d", genotypes.get(1).getProfileId());
-        assertEquals("AA", genotypes.get(1).getValues().get("rs3094315"));
-        assertEquals("TT", genotypes.get(1).getValues().get("rs3737728"));
+        Genotype genotype = ((ScribePersonalGenomeClient) client).parseGenotypes(inputStream);
+        assertNotNull(genotype);
+        assertEquals("44aa40", genotype.getProfileId());
+        assertEquals("AA", genotype.getValues().get("rs3094315"));
+        assertEquals("TT", genotype.getValues().get("rs3737728"));
     }
 
     @Test
@@ -216,23 +216,54 @@ public final class ScribePersonalGenomeClientTest extends AbstractPersonalGenome
     }
 
     @Test
-    public void testParseAncestryFlat() {
-        InputStream inputStream = getClass().getResourceAsStream("ancestryFlat.json");
-        List<Ancestry> ancestries = ((ScribePersonalGenomeClient) client).parseAncestry(inputStream);
-        assertNotNull(ancestries);
-        assertEquals(2, ancestries.size());
-        for (Ancestry ancestry : ancestries) {
-            assertTrue("7ad467ea509080fb".equals(ancestry.getProfileId()) || "18974891hh1f3h".equals(ancestry.getProfileId()));
+    public void testParseAncestry() {
+        InputStream inputStream = getClass().getResourceAsStream("ancestry.json");
+        Ancestry ancestry = ((ScribePersonalGenomeClient) client).parseAncestry(inputStream);
+        assertNotNull(ancestry);
+        assertEquals("7ad467ea509080fb", ancestry.getProfileId());
+        assertEquals("Total", ancestry.getLabel());
+        assertEquals(1.0d, ancestry.getProportion(), 0.1d);
+        assertEquals(0.0d, ancestry.getUnassigned(), 0.1d);
+        assertNotNull(ancestry.getSubPopulations());
+        assertEquals(2, ancestry.getSubPopulations().size());
+
+        for (Ancestry subPopulation : ancestry.getSubPopulations()) {
+            if ("Sub-Saharan African".equals(subPopulation.getLabel())) {
+                assertEquals(0.8827d, subPopulation.getProportion(), 0.1d);
+                assertEquals(0.0d, subPopulation.getUnassigned(), 0.1d);
+                assertNotNull(subPopulation.getSubPopulations());
+                assertTrue(subPopulation.getSubPopulations().isEmpty());
+            }
+            else if ("European".equals(subPopulation.getLabel())) {
+                assertEquals(0.1773d, subPopulation.getProportion(), 0.1d);
+                assertEquals(0.0193d, subPopulation.getUnassigned(), 0.1d);
+                assertNotNull(subPopulation.getSubPopulations());
+                assertEquals(1, subPopulation.getSubPopulations().size());
+
+                Ancestry subSubPopulation = subPopulation.getSubPopulations().get(0);
+                assertEquals("Northern European", subSubPopulation.getLabel());
+                assertEquals(0.1579d, subSubPopulation.getProportion(), 0.1d);
+                assertEquals(0.0725d, subSubPopulation.getUnassigned(), 0.1d);
+                assertNotNull(subSubPopulation.getSubPopulations());
+                assertEquals(1, subSubPopulation.getSubPopulations().size());
+
+                Ancestry subSubSubPopulation = subSubPopulation.getSubPopulations().get(0);
+                assertEquals("French and German", subSubSubPopulation.getLabel());
+                assertEquals(0.1579d, subSubSubPopulation.getProportion(), 0.1d);
+                assertEquals(0.0725d, subSubSubPopulation.getUnassigned(), 0.1d);
+                assertNotNull(subSubSubPopulation.getSubPopulations());
+                assertTrue(subSubSubPopulation.getSubPopulations().isEmpty());
+            }
+            else {
+                fail("unexpected subpopulation label");
+            }
         }
     }
 
     @Test
-    public void testParseAncestrySingleFlat() {
-        InputStream inputStream = getClass().getResourceAsStream("ancestrySingleFlat.json");
-        List<Ancestry> ancestries = ((ScribePersonalGenomeClient) client).parseAncestry(inputStream);
-        assertNotNull(ancestries);
-        assertEquals(1, ancestries.size());
-        Ancestry ancestry = ancestries.get(0);
+    public void testParseAncestryFlat() {
+        InputStream inputStream = getClass().getResourceAsStream("ancestryFlat.json");
+        Ancestry ancestry = ((ScribePersonalGenomeClient) client).parseAncestry(inputStream);
         assertNotNull(ancestry);
         assertEquals("7ad467ea509080fb", ancestry.getProfileId());
         assertEquals("Total", ancestry.getLabel());
@@ -240,61 +271,5 @@ public final class ScribePersonalGenomeClientTest extends AbstractPersonalGenome
         assertEquals(0.0d, ancestry.getUnassigned(), 0.1d);
         assertNotNull(ancestry.getSubPopulations());
         assertTrue(ancestry.getSubPopulations().isEmpty());
-    }
-
-    @Test
-    public void testParseAncestry() {
-        InputStream inputStream = getClass().getResourceAsStream("ancestry.json");
-        List<Ancestry> ancestries = ((ScribePersonalGenomeClient) client).parseAncestry(inputStream);
-        assertNotNull(ancestries);
-        assertEquals(2, ancestries.size());
-        for (Ancestry ancestry : ancestries) {
-            if ("7ad467ea509080fb".equals(ancestry.getProfileId())) {
-                assertEquals("Total", ancestry.getLabel());
-                assertEquals(1.0d, ancestry.getProportion(), 0.1d);
-                assertEquals(0.0d, ancestry.getUnassigned(), 0.1d);
-                assertNotNull(ancestry.getSubPopulations());
-                assertEquals(2, ancestry.getSubPopulations().size());
-
-                for (Ancestry subPopulation : ancestry.getSubPopulations()) {
-                    if ("Sub-Saharan African".equals(subPopulation.getLabel())) {
-                        assertEquals(0.8827d, subPopulation.getProportion(), 0.1d);
-                        assertEquals(0.0d, subPopulation.getUnassigned(), 0.1d);
-                        assertNotNull(subPopulation.getSubPopulations());
-                        assertTrue(subPopulation.getSubPopulations().isEmpty());
-                    }
-                    else if ("European".equals(subPopulation.getLabel())) {
-                        assertEquals(0.1773d, subPopulation.getProportion(), 0.1d);
-                        assertEquals(0.0193d, subPopulation.getUnassigned(), 0.1d);
-                        assertNotNull(subPopulation.getSubPopulations());
-                        assertEquals(1, subPopulation.getSubPopulations().size());
-
-                        Ancestry subSubPopulation = subPopulation.getSubPopulations().get(0);
-                        assertEquals("Northern European", subSubPopulation.getLabel());
-                        assertEquals(0.1579d, subSubPopulation.getProportion(), 0.1d);
-                        assertEquals(0.0725d, subSubPopulation.getUnassigned(), 0.1d);
-                        assertNotNull(subSubPopulation.getSubPopulations());
-                        assertEquals(1, subSubPopulation.getSubPopulations().size());
-
-                        Ancestry subSubSubPopulation = subSubPopulation.getSubPopulations().get(0);
-                        assertEquals("French and German", subSubSubPopulation.getLabel());
-                        assertEquals(0.1579d, subSubSubPopulation.getProportion(), 0.1d);
-                        assertEquals(0.0725d, subSubSubPopulation.getUnassigned(), 0.1d);
-                        assertNotNull(subSubSubPopulation.getSubPopulations());
-                        assertTrue(subSubSubPopulation.getSubPopulations().isEmpty());
-                    }
-                    else {
-                        fail("unexpected subpopulation label");
-                    }
-                }
-            }
-            else if ("18974891hh1f3h".equals(ancestry.getProfileId())) {
-                assertNotNull(ancestry.getSubPopulations());
-                assertTrue(ancestry.getSubPopulations().isEmpty());
-            }
-            else {
-                fail("unexpected profile id");
-            }
-        }
     }
 }
