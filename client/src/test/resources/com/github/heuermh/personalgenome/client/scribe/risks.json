@@ -1,0 +1,17 @@
+{
+    "id": "c4480ba411939067",
+    "risks": [
+        {
+            "description": "Atrial Fibrillation",
+            "report_id": "atrialfib",
+            "population_risk": 0.2715,
+            "risk": 0.4164
+        },
+        {
+            "description": "Prostate Cancer",
+            "report_id": "prostate",
+            "population_risk": 0.1783,
+            "risk": 0.2585
+        }
+    ]
+}

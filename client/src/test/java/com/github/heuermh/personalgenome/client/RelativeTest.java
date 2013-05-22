@@ -25,6 +25,7 @@ package com.github.heuermh.personalgenome.client;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
@@ -35,14 +36,25 @@ import org.junit.Test;
 public final class RelativeTest {
 
     @Test(expected=NullPointerException.class)
-    public void testConstructorNullId() {
-        new Relative(null);
+    public void testConstructorNullProfileId() {
+        new Relative(null, "matchId", 0.5, 42, null, null, null);
+    }
+
+    @Test(expected=NullPointerException.class)
+    public void testConstructorNullMatchId() {
+        new Relative("profileId", null, 0.5, 42, null, null, null);
     }
 
     @Test
     public void testConstructor() {
-        Relative relative = new Relative("id");
+        Relative relative = new Relative("profileId", "matchId", 0.5, 42, null, null, null);
         assertNotNull(relative);
-        assertEquals("id", relative.getId());
+        assertEquals("profileId", relative.getProfileId());
+        assertEquals("matchId", relative.getMatchId());
+        assertEquals(0.5d, relative.getSimilarity(), 0.1d);
+        assertEquals(42, relative.getSharedSegments());
+        assertNull(relative.getRelationship());
+        assertNull(relative.getUserRelationship());
+        assertNull(relative.getRange());
     }
 }

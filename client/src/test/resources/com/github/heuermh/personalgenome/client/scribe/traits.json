@@ -1,0 +1,23 @@
+{
+    "id": "c4480ba411939067",
+    "traits": [
+        {
+            "description": "Muscle Performance",
+            "report_id": "muscleperformance",
+            "possible_traits": [
+                "Likely Sprinter",
+                "Unlikely Sprinter"
+            ],
+            "trait": "Unlikely Sprinter"
+        },
+        {
+            "description": "Resistance to HIV/AIDS",
+            "report_id": "hiv",
+            "possible_traits": [
+                "Not Resistant",
+                "Partially Resistant"
+            ],
+            "trait": "Not Resistant"
+        }
+    ]
+}

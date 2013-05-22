@@ -60,6 +60,7 @@ import com.github.heuermh.personalgenome.client.UserName;
 
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import org.mockito.Mock;
@@ -73,6 +74,8 @@ import org.scribe.model.Token;
  * Unit test for ScribePersonalGenomeClient.
  */
 public final class ScribePersonalGenomeClientTest extends AbstractPersonalGenomeClientTest {
+    private ScribePersonalGenomeClient scribeClient;
+
     @Mock
     private OAuthService service;
     @Mock
@@ -89,6 +92,7 @@ public final class ScribePersonalGenomeClientTest extends AbstractPersonalGenome
     public void setUp() {
         MockitoAnnotations.initMocks(this);
         super.setUp();
+        scribeClient = (ScribePersonalGenomeClient) client;
     }
 
     @Override
@@ -98,7 +102,7 @@ public final class ScribePersonalGenomeClientTest extends AbstractPersonalGenome
 
     @Test
     public void testCreateAndSignRequest() {
-        OAuthRequest request = ((ScribePersonalGenomeClient) client).createAndSignRequest("http://localhost");
+        OAuthRequest request = scribeClient.createAndSignRequest("http://localhost");
         assertNotNull(request);
         assertTrue(request.getHeaders().containsKey("Authorization"));
         verify(service).signRequest(eq(accessToken), any(OAuthRequest.class));
@@ -107,7 +111,7 @@ public final class ScribePersonalGenomeClientTest extends AbstractPersonalGenome
     @Test
     public void testParseAccessDeniedException() {
         InputStream inputStream = getClass().getResourceAsStream("accessDenied.json");
-        PersonalGenomeClientException exception = ((ScribePersonalGenomeClient) client).parseException(inputStream);
+        PersonalGenomeClientException exception = scribeClient.parseException(inputStream);
         assertNotNull(exception);
         assertTrue(exception instanceof AccessDeniedException);
         assertEquals("error description", exception.getMessage());
@@ -116,7 +120,7 @@ public final class ScribePersonalGenomeClientTest extends AbstractPersonalGenome
     @Test
     public void testParseInvalidClientException() {
         InputStream inputStream = getClass().getResourceAsStream("invalidClient.json");
-        PersonalGenomeClientException exception = ((ScribePersonalGenomeClient) client).parseException(inputStream);
+        PersonalGenomeClientException exception = scribeClient.parseException(inputStream);
         assertNotNull(exception);
         assertTrue(exception instanceof InvalidClientException);
         assertEquals("error description", exception.getMessage());
@@ -125,7 +129,7 @@ public final class ScribePersonalGenomeClientTest extends AbstractPersonalGenome
     @Test
     public void testParseInvalidRequestException() {
         InputStream inputStream = getClass().getResourceAsStream("invalidRequest.json");
-        PersonalGenomeClientException exception = ((ScribePersonalGenomeClient) client).parseException(inputStream);
+        PersonalGenomeClientException exception = scribeClient.parseException(inputStream);
         assertNotNull(exception);
         assertTrue(exception instanceof InvalidRequestException);
         assertEquals("error description", exception.getMessage());
@@ -134,7 +138,7 @@ public final class ScribePersonalGenomeClientTest extends AbstractPersonalGenome
     @Test
     public void testParseInvalidScopeException() {
         InputStream inputStream = getClass().getResourceAsStream("invalidScope.json");
-        PersonalGenomeClientException exception = ((ScribePersonalGenomeClient) client).parseException(inputStream);
+        PersonalGenomeClientException exception = scribeClient.parseException(inputStream);
         assertNotNull(exception);
         assertTrue(exception instanceof InvalidScopeException);
         assertEquals("error description", exception.getMessage());
@@ -143,7 +147,7 @@ public final class ScribePersonalGenomeClientTest extends AbstractPersonalGenome
     @Test
     public void testParseUnknownException() {
         InputStream inputStream = getClass().getResourceAsStream("unknown.json");
-        PersonalGenomeClientException exception = ((ScribePersonalGenomeClient) client).parseException(inputStream);
+        PersonalGenomeClientException exception = scribeClient.parseException(inputStream);
         assertNotNull(exception);
         assertEquals("error description", exception.getMessage());
     }
@@ -151,7 +155,7 @@ public final class ScribePersonalGenomeClientTest extends AbstractPersonalGenome
     @Test
     public void testParseUser() {
         InputStream inputStream = getClass().getResourceAsStream("user.json");
-        User user = ((ScribePersonalGenomeClient) client).parseUser(inputStream);
+        User user = scribeClient.parseUser(inputStream);
         assertNotNull(user);
         assertEquals("c3a110", user.getId());
         assertEquals(2, user.getProfiles().size());
@@ -164,7 +168,7 @@ public final class ScribePersonalGenomeClientTest extends AbstractPersonalGenome
     @Test
     public void testParseNames() {
         InputStream inputStream = getClass().getResourceAsStream("names.json");
-        UserName userName = ((ScribePersonalGenomeClient) client).parseNames(inputStream);
+        UserName userName = scribeClient.parseNames(inputStream);
         assertNotNull(userName);
         assertEquals("c3a110", userName.getId());
         assertEquals("Gene", userName.getFirstName());
@@ -181,7 +185,7 @@ public final class ScribePersonalGenomeClientTest extends AbstractPersonalGenome
     @Test
     public void testParseHaplogroups() {
         InputStream inputStream = getClass().getResourceAsStream("haplogroups.json");
-        Haplogroup haplogroup = ((ScribePersonalGenomeClient) client).parseHaplogroups(inputStream);
+        Haplogroup haplogroup = scribeClient.parseHaplogroups(inputStream);
         assertNotNull(haplogroup);
         assertEquals("c4480ba411939067", haplogroup.getProfileId());
         assertEquals("D2a1", haplogroup.getPaternal());
@@ -199,7 +203,7 @@ public final class ScribePersonalGenomeClientTest extends AbstractPersonalGenome
     @Test
     public void testParseGenotypes() {
         InputStream inputStream = getClass().getResourceAsStream("genotype.json");
-        Genotype genotype = ((ScribePersonalGenomeClient) client).parseGenotypes(inputStream);
+        Genotype genotype = scribeClient.parseGenotypes(inputStream);
         assertNotNull(genotype);
         assertEquals("44aa40", genotype.getProfileId());
         assertEquals("AA", genotype.getValues().get("rs3094315"));
@@ -209,7 +213,7 @@ public final class ScribePersonalGenomeClientTest extends AbstractPersonalGenome
     @Test
     public void testParseGenomes() {
         InputStream inputStream = getClass().getResourceAsStream("genomes.json");
-        Genome genome = ((ScribePersonalGenomeClient) client).parseGenomes(inputStream);
+        Genome genome = scribeClient.parseGenomes(inputStream);
         assertNotNull(genome);
         assertEquals("c4480ba411939067", genome.getProfileId());
         assertEquals("ACTAGTAG__TTGADDAAIICCTTDDTT", genome.getValues());
@@ -218,7 +222,7 @@ public final class ScribePersonalGenomeClientTest extends AbstractPersonalGenome
     @Test
     public void testParseAncestry() {
         InputStream inputStream = getClass().getResourceAsStream("ancestry.json");
-        Ancestry ancestry = ((ScribePersonalGenomeClient) client).parseAncestry(inputStream);
+        Ancestry ancestry = scribeClient.parseAncestry(inputStream);
         assertNotNull(ancestry);
         assertEquals("7ad467ea509080fb", ancestry.getProfileId());
         assertEquals("Total", ancestry.getLabel());
@@ -263,7 +267,7 @@ public final class ScribePersonalGenomeClientTest extends AbstractPersonalGenome
     @Test
     public void testParseAncestryFlat() {
         InputStream inputStream = getClass().getResourceAsStream("ancestryFlat.json");
-        Ancestry ancestry = ((ScribePersonalGenomeClient) client).parseAncestry(inputStream);
+        Ancestry ancestry = scribeClient.parseAncestry(inputStream);
         assertNotNull(ancestry);
         assertEquals("7ad467ea509080fb", ancestry.getProfileId());
         assertEquals("Total", ancestry.getLabel());
@@ -271,5 +275,112 @@ public final class ScribePersonalGenomeClientTest extends AbstractPersonalGenome
         assertEquals(0.0d, ancestry.getUnassigned(), 0.1d);
         assertNotNull(ancestry.getSubPopulations());
         assertTrue(ancestry.getSubPopulations().isEmpty());
+    }
+
+    @Test
+    public void testParseNeanderthalProportion() {
+        InputStream inputStream = getClass().getResourceAsStream("neanderthal.json");
+        double neanderthalProportion = scribeClient.parseNeanderthalProportion(inputStream);
+        assertEquals(0.0310d, neanderthalProportion, 0.1d);
+    }
+
+    @Ignore
+    public void testParseRelatives() {
+        InputStream inputStream = getClass().getResourceAsStream("relatives.json");
+        List<Relative> relatives = scribeClient.parseRelatives(inputStream);
+        assertNotNull(relatives);
+        assertEquals(1, relatives.size());
+        Relative relative = relatives.get(0);
+        assertNotNull(relative);
+    }
+
+    @Test
+    public void testParseRisks() {
+        InputStream inputStream = getClass().getResourceAsStream("risks.json");
+        List<Risk> risks = scribeClient.parseRisks(inputStream);
+        assertNotNull(risks);
+        assertEquals(2, risks.size());
+        Risk risk0 = risks.get(0);
+        assertNotNull(risk0);
+        assertEquals("c4480ba411939067", risk0.getProfileId());
+        assertEquals("atrialfib", risk0.getReportId());
+        assertEquals("Atrial Fibrillation", risk0.getDescription());
+        assertEquals(0.4164d, risk0.getRisk(), 0.1d);
+        assertEquals(0.2715d, risk0.getPopulationRisk(), 0.1d);
+        Risk risk1 = risks.get(1);
+        assertNotNull(risk1);
+        assertEquals("c4480ba411939067", risk1.getProfileId());
+        assertEquals("prostate", risk1.getReportId());
+        assertEquals("Prostate Cancer", risk1.getDescription());
+        assertEquals(0.2585d, risk1.getRisk(), 0.1d);
+        assertEquals(0.1783d, risk1.getPopulationRisk(), 0.1d);
+    }
+
+    @Test
+    public void testParseCarriers() {
+        InputStream inputStream = getClass().getResourceAsStream("carriers.json");
+        List<Carrier> carriers = scribeClient.parseCarriers(inputStream);
+        assertNotNull(carriers);
+        assertEquals(2, carriers.size());
+        Carrier carrier0 = carriers.get(0);
+        assertNotNull(carrier0);
+        assertEquals("c4480ba411939067", carrier0.getProfileId());
+        assertEquals("tay_sachs", carrier0.getReportId());
+        assertEquals("Tay-Sachs Disease", carrier0.getDescription());
+        assertEquals(1, carrier0.getMutations());
+        Carrier carrier1 = carriers.get(1);
+        assertNotNull(carrier1);
+        assertEquals("c4480ba411939067", carrier1.getProfileId());
+        assertEquals("cf_panel", carrier1.getReportId());
+        assertEquals("Cystic Fibrosis", carrier1.getDescription());
+        assertEquals(2, carrier1.getMutations());
+    }
+
+    @Test
+    public void testParseDrugResponses() {
+        InputStream inputStream = getClass().getResourceAsStream("drugResponses.json");
+        List<DrugResponse> drugResponses = scribeClient.parseDrugResponses(inputStream);
+        assertNotNull(drugResponses);
+        assertEquals(2, drugResponses.size());
+        DrugResponse drugResponse0 = drugResponses.get(0);
+        assertNotNull(drugResponse0);
+        assertEquals("c4480ba411939067", drugResponse0.getProfileId());
+        assertEquals("alcohol_esophageal_pgx", drugResponse0.getReportId());
+        assertEquals("Alcohol Consumption, Smoking and Risk of Esophageal Cancer", drugResponse0.getDescription());
+        assertEquals("typical", drugResponse0.getStatus());
+        DrugResponse drugResponse1 = drugResponses.get(1);
+        assertNotNull(drugResponse1);
+        assertEquals("c4480ba411939067", drugResponse1.getProfileId());
+        assertEquals("hepc_peginf_ribavirin", drugResponse1.getReportId());
+        assertEquals("Response to Hepatitis C Treatment", drugResponse1.getDescription());
+        assertEquals("reduced", drugResponse1.getStatus());
+    }
+
+    @Test
+    public void testParseTraits() {
+        InputStream inputStream = getClass().getResourceAsStream("traits.json");
+        List<Trait> traits = scribeClient.parseTraits(inputStream);
+        assertNotNull(traits);
+        assertEquals(2, traits.size());
+        Trait trait0 = traits.get(0);
+        assertNotNull(trait0);
+        assertEquals("c4480ba411939067", trait0.getProfileId());
+        assertEquals("muscleperformance", trait0.getReportId());
+        assertEquals("Muscle Performance", trait0.getDescription());
+        assertEquals("Unlikely Sprinter", trait0.getTrait());
+        assertNotNull(trait0.getPossibleTraits());
+        assertEquals(2, trait0.getPossibleTraits().size());
+        assertTrue(trait0.getPossibleTraits().contains("Likely Sprinter"));
+        assertTrue(trait0.getPossibleTraits().contains("Unlikely Sprinter"));
+        Trait trait1 = traits.get(1);
+        assertNotNull(trait1);
+        assertEquals("c4480ba411939067", trait1.getProfileId());
+        assertEquals("hiv", trait1.getReportId());
+        assertEquals("Resistance to HIV/AIDS", trait1.getDescription());
+        assertEquals("Not Resistant", trait1.getTrait());
+        assertNotNull(trait1.getPossibleTraits());
+        assertEquals(2, trait1.getPossibleTraits().size());
+        assertTrue(trait1.getPossibleTraits().contains("Not Resistant"));
+        assertTrue(trait1.getPossibleTraits().contains("Partially Resistant"));
     }
 }

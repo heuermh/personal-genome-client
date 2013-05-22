@@ -175,6 +175,7 @@ public interface PersonalGenomeClient {
      *    or parameter value, or is otherwise malformed
      * @throws InvalidScopeException if the requested scope is invalid, unknown, or malformed
      */
+    //Neanderthal neanderthal(String profileId); if any attrs are added
     double neanderthalProportion(String profileId);
 
     /**

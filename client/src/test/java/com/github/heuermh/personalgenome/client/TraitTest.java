@@ -27,22 +27,63 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.util.Collections;
+import java.util.Set;
+
+import com.google.common.collect.ImmutableSet;
+
 import org.junit.Test;
 
 /**
  * Unit test for Trait.
  */
 public final class TraitTest {
+    private Set<String> possibleTraits = ImmutableSet.of("trait0", "trait1", "trait2");
 
     @Test(expected=NullPointerException.class)
-    public void testConstructorNullId() {
-        new Trait(null);
+    public void testConstructorNullProfileId() {
+        new Trait(null, "reportId", "description", "trait0", possibleTraits);
+    }
+
+    @Test(expected=NullPointerException.class)
+    public void testConstructorNullReportId() {
+        new Trait("profileId", null, "description", "trait0", possibleTraits);
+    }
+
+    @Test(expected=NullPointerException.class)
+    public void testConstructorNullDescription() {
+        new Trait("profileId", "reportId", null, "trait0", possibleTraits);
+    }
+
+    @Test(expected=NullPointerException.class)
+    public void testConstructorNullTrait() {
+        new Trait("profileId", "reportId", "description", null, possibleTraits);
+    }
+
+    @Test(expected=NullPointerException.class)
+    public void testConstructorNullPossibleTraits() {
+        new Trait(null, "reportId", "description", "trait0", null);
+    }
+
+    @Test(expected=IllegalArgumentException.class)
+    public void testConstructorEmptyPossibleTraits() {
+        new Trait("profileId", "reportId", "description", "trait0", Collections.<String>emptySet());
+    }
+
+    @Test(expected=IllegalArgumentException.class)
+    public void testConstructorTraitNotContainedInPossibleTraits() {
+        new Trait("profileId", "reportId", "description", "invalidTrait", possibleTraits);
     }
 
     @Test
     public void testConstructor() {
-        Trait trait = new Trait("id");
+        Trait trait = new Trait("profileId", "reportId", "description", "trait0", possibleTraits);
         assertNotNull(trait);
-        assertEquals("id", trait.getId());
+        assertEquals("profileId", trait.getProfileId());
+        assertEquals("reportId", trait.getReportId());
+        assertEquals("description", trait.getDescription());
+        assertEquals("trait0", trait.getTrait());
+        assertEquals(possibleTraits, trait.getPossibleTraits());
+        assertTrue(trait.getPossibleTraits().contains(trait.getTrait()));
     }
 }

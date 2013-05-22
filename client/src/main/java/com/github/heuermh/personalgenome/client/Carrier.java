@@ -36,14 +36,34 @@ import com.google.common.collect.ImmutableList;
  */
 @Immutable
 public final class Carrier {
-    private final String id;
+    private final String profileId;
+    private final String reportId;
+    private final String description;
+    private final int mutations;
 
-    public Carrier(final String id) {
-        checkNotNull(id);
-        this.id = id;
+    public Carrier(final String profileId, final String reportId, final String description, final int mutations) {
+        checkNotNull(profileId);
+        checkNotNull(reportId);
+        checkNotNull(description);
+        this.profileId = profileId;
+        this.reportId = reportId;
+        this.description = description;
+        this.mutations = mutations;
     }
 
-    public String getId() {
-        return id;
+    public String getProfileId() {
+        return profileId;
+    }
+
+    public String getReportId() {
+        return reportId;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public int getMutations() {
+        return mutations;
     }
 }

@@ -36,14 +36,35 @@ import com.google.common.collect.ImmutableList;
  */
 @Immutable
 public final class DrugResponse {
-    private final String id;
+    private final String profileId;
+    private final String reportId;
+    private final String description;
+    private final String status;
 
-    public DrugResponse(final String id) {
-        checkNotNull(id);
-        this.id = id;
+    public DrugResponse(final String profileId, final String reportId, final String description, final String status) {
+        checkNotNull(profileId);
+        checkNotNull(reportId);
+        checkNotNull(description);
+        checkNotNull(status);
+        this.profileId = profileId;
+        this.reportId = reportId;
+        this.description = description;
+        this.status = status;
     }
 
-    public String getId() {
-        return id;
+    public String getProfileId() {
+        return profileId;
+    }
+
+    public String getReportId() {
+        return reportId;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public String getStatus() {
+        return status;
     }
 }

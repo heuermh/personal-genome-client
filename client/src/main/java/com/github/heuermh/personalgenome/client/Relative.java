@@ -25,25 +25,63 @@ package com.github.heuermh.personalgenome.client;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import java.util.List;
+import java.util.Set;
 
 import javax.annotation.concurrent.Immutable;
 
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Sets;
 
 /**
  * Relative.
  */
 @Immutable
 public final class Relative {
-    private final String id;
+    private final String profileId;
+    private final String matchId;
+    private final double similarity;
+    private final int sharedSegments;
+    private final Relationship relationship;
+    private final Relationship userRelationship;
+    private final Set<Relationship> range;
 
-    public Relative(final String id) {
-        checkNotNull(id);
-        this.id = id;
+    public Relative(final String profileId, final String matchId, final double similarity, final int sharedSegments, final Relationship relationship, final Relationship userRelationship, final Set<Relationship> range) {
+        checkNotNull(profileId);
+        checkNotNull(matchId);
+        this.profileId = profileId;
+        this.matchId = matchId;
+        this.similarity = similarity;
+        this.sharedSegments = sharedSegments;
+        this.relationship = relationship;
+        this.userRelationship = userRelationship;
+        // or return empty?
+        this.range = range == null ? null : Sets.immutableEnumSet(range);
     }
 
-    public String getId() {
-        return id;
+    public String getProfileId() {
+        return profileId;
+    }
+
+    public String getMatchId() {
+        return matchId;
+    }
+
+    public double getSimilarity() {
+        return similarity;
+    }
+
+    public int getSharedSegments() {
+        return sharedSegments;
+    }
+
+    public Relationship getRelationship() {
+        return relationship;
+    }
+
+    public Relationship getUserRelationship() {
+        return userRelationship;
+    }
+
+    public Set<Relationship> getRange() {
+        return range;
     }
 }

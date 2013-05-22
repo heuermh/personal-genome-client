@@ -1,0 +1,15 @@
+{
+    "id": "c4480ba411939067",
+    "drug_responses": [
+        {
+            "description": "Alcohol Consumption, Smoking and Risk of Esophageal Cancer",
+            "report_id": "alcohol_esophageal_pgx",
+            "status": "typical"
+        },
+        {
+            "description": "Response to Hepatitis C Treatment",
+            "report_id": "hepc_peginf_ribavirin",
+            "status": "reduced"
+        }
+    ]
+}

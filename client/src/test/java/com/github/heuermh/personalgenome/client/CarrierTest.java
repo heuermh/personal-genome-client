@@ -35,14 +35,27 @@ import org.junit.Test;
 public final class CarrierTest {
 
     @Test(expected=NullPointerException.class)
-    public void testConstructorNullId() {
-        new Carrier(null);
+    public void testConstructorNullProfileId() {
+        new Carrier(null, "reportId", "description", 42);
+    }
+
+    @Test(expected=NullPointerException.class)
+    public void testConstructorNullReportId() {
+        new Carrier("profileId", null, "description", 42);
+    }
+
+    @Test(expected=NullPointerException.class)
+    public void testConstructorNullDescription() {
+        new Carrier("profileId", "reportId", null, 42);
     }
 
     @Test
     public void testConstructor() {
-        Carrier carrier = new Carrier("id");
+        Carrier carrier = new Carrier("profileId", "reportId", "description", 42);
         assertNotNull(carrier);
-        assertEquals("id", carrier.getId());
+        assertEquals("profileId", carrier.getProfileId());
+        assertEquals("reportId", carrier.getReportId());
+        assertEquals("description", carrier.getDescription());
+        assertEquals(42, carrier.getMutations());
     }
 }

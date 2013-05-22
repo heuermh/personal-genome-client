@@ -30,9 +30,11 @@ import java.io.IOException;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParser;
@@ -766,7 +768,27 @@ public final class ScribePersonalGenomeClient implements PersonalGenomeClient {
             parser = jsonFactory.createJsonParser(inputStream);
             parser.nextToken();
 
-            return 1d;
+            String id = null;
+            double proportion = -1d;
+            while (parser.nextToken() != JsonToken.END_OBJECT) {
+                String field = parser.getCurrentName();
+                parser.nextToken();
+
+                if ("id".equals(field)) {
+                    id = parser.getText();
+                }
+                else if ("neanderthal".equals(field)) {
+                    while (parser.nextToken() != JsonToken.END_OBJECT) {
+                        String neanderthalField = parser.getCurrentName();
+                        parser.nextToken();
+
+                        if ("proportion".equals(neanderthalField)) {
+                            proportion = Double.parseDouble(parser.getText());
+                        }
+                    }
+                }
+            }
+            return proportion;
         }
         catch (IOException e) {
             logger.warn("could not parse neanderthal proportion", e);
@@ -823,7 +845,46 @@ public final class ScribePersonalGenomeClient implements PersonalGenomeClient {
             parser = jsonFactory.createJsonParser(inputStream);
             parser.nextToken();
 
+            String id = null;
+            String reportId = null;
+            String description = null;
+            double risk = 0.0d;
+            double populationRisk = 0.0d;
             List<Risk> risks = new ArrayList<Risk>();
+            while (parser.nextToken() != JsonToken.END_OBJECT) {
+                String field = parser.getCurrentName();
+                parser.nextToken();
+
+                if ("id".equals(field)) {
+                    id = parser.getText();
+                }
+                else if ("risks".equals(field)) {
+                    while (parser.nextToken() != JsonToken.END_ARRAY) {
+                        while (parser.nextToken() != JsonToken.END_OBJECT) {
+                            String riskField = parser.getCurrentName();
+                            parser.nextToken();
+
+                            if ("report_id".equals(riskField)) {
+                                reportId = parser.getText();
+                            }
+                            else if ("description".equals(riskField)) {
+                                description = parser.getText();
+                            }
+                            else if ("risk".equals(riskField)) {
+                                risk = Double.parseDouble(parser.getText());
+                            }
+                            else if ("population_risk".equals(riskField)) {
+                                populationRisk = Double.parseDouble(parser.getText());
+                            }
+                        }
+                        risks.add(new Risk(id, reportId, description, risk, populationRisk));
+                        reportId = null;
+                        description = null;
+                        risk = 0.0d;
+                        populationRisk = 0.0d;
+                    }
+                }
+            }
             return risks;
         }
         catch (IOException e) {
@@ -852,7 +913,41 @@ public final class ScribePersonalGenomeClient implements PersonalGenomeClient {
             parser = jsonFactory.createJsonParser(inputStream);
             parser.nextToken();
 
+            String id = null;
+            String reportId = null;
+            String description = null;
+            int mutations = 0;
             List<Carrier> carriers = new ArrayList<Carrier>();
+            while (parser.nextToken() != JsonToken.END_OBJECT) {
+                String field = parser.getCurrentName();
+                parser.nextToken();
+
+                if ("id".equals(field)) {
+                    id = parser.getText();
+                }
+                else if ("carriers".equals(field)) {
+                    while (parser.nextToken() != JsonToken.END_ARRAY) {
+                        while (parser.nextToken() != JsonToken.END_OBJECT) {
+                            String carrierField = parser.getCurrentName();
+                            parser.nextToken();
+
+                            if ("report_id".equals(carrierField)) {
+                                reportId = parser.getText();
+                            }
+                            else if ("description".equals(carrierField)) {
+                                description = parser.getText();
+                            }
+                            else if ("mutations".equals(carrierField)) {
+                                mutations = Integer.parseInt(parser.getText());
+                            }
+                        }
+                        carriers.add(new Carrier(id, reportId, description, mutations));
+                        reportId = null;
+                        description = null;
+                        mutations = 0;
+                    }
+                }
+            }
             return carriers;
         }
         catch (IOException e) {
@@ -881,7 +976,41 @@ public final class ScribePersonalGenomeClient implements PersonalGenomeClient {
             parser = jsonFactory.createJsonParser(inputStream);
             parser.nextToken();
 
+            String id = null;
+            String reportId = null;
+            String description = null;
+            String status = null;
             List<DrugResponse> drugResponses = new ArrayList<DrugResponse>();
+            while (parser.nextToken() != JsonToken.END_OBJECT) {
+                String field = parser.getCurrentName();
+                parser.nextToken();
+
+                if ("id".equals(field)) {
+                    id = parser.getText();
+                }
+                else if ("drug_responses".equals(field)) {
+                    while (parser.nextToken() != JsonToken.END_ARRAY) {
+                        while (parser.nextToken() != JsonToken.END_OBJECT) {
+                            String drugResponseField = parser.getCurrentName();
+                            parser.nextToken();
+
+                            if ("report_id".equals(drugResponseField)) {
+                                reportId = parser.getText();
+                            }
+                            else if ("description".equals(drugResponseField)) {
+                                description = parser.getText();
+                            }
+                            else if ("status".equals(drugResponseField)) {
+                                status = parser.getText();
+                            }
+                        }
+                        drugResponses.add(new DrugResponse(id, reportId, description, status));
+                        reportId = null;
+                        description = null;
+                        status = null;
+                    }
+                }
+            }
             return drugResponses;
         }
         catch (IOException e) {
@@ -910,7 +1039,48 @@ public final class ScribePersonalGenomeClient implements PersonalGenomeClient {
             parser = jsonFactory.createJsonParser(inputStream);
             parser.nextToken();
 
+            String id = null;
+            String reportId = null;
+            String description = null;
+            String trait = null;
+            Set<String> possibleTraits = new HashSet<String>();
             List<Trait> traits = new ArrayList<Trait>();
+            while (parser.nextToken() != JsonToken.END_OBJECT) {
+                String field = parser.getCurrentName();
+                parser.nextToken();
+
+                if ("id".equals(field)) {
+                    id = parser.getText();
+                }
+                else if ("traits".equals(field)) {
+                    while (parser.nextToken() != JsonToken.END_ARRAY) {
+                        while (parser.nextToken() != JsonToken.END_OBJECT) {
+                            String traitField = parser.getCurrentName();
+                            parser.nextToken();
+
+                            if ("report_id".equals(traitField)) {
+                                reportId = parser.getText();
+                            }
+                            else if ("description".equals(traitField)) {
+                                description = parser.getText();
+                            }
+                            else if ("trait".equals(traitField)) {
+                                trait = parser.getText();
+                            }
+                            else if ("possible_traits".equals(traitField)) {
+                                while (parser.nextToken() != JsonToken.END_ARRAY) {
+                                    possibleTraits.add(parser.getText());
+                                }
+                            }
+                        }
+                        traits.add(new Trait(id, reportId, description, trait, possibleTraits));
+                        reportId = null;
+                        description = null;
+                        trait = null;
+                        possibleTraits.clear();
+                    }
+                }
+            }
             return traits;
         }
         catch (IOException e) {

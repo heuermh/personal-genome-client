@@ -25,25 +25,59 @@ package com.github.heuermh.personalgenome.client;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import java.util.List;
+import java.util.Set;
 
 import javax.annotation.concurrent.Immutable;
 
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 /**
  * Trait.
  */
 @Immutable
 public final class Trait {
-    private final String id;
+    private final String profileId;
+    private final String reportId;
+    private final String description;
 
-    public Trait(final String id) {
-        checkNotNull(id);
-        this.id = id;
+    // todo:  trait is a value in possible_traits, or null if the profile's not analyzed at those markers
+    private final String trait;
+
+    private final Set<String> possibleTraits;
+
+    public Trait(final String profileId, final String reportId, final String description, final String trait, final Set<String> possibleTraits) {
+        checkNotNull(profileId);
+        checkNotNull(reportId);
+        checkNotNull(description);
+        checkNotNull(trait);
+        checkNotNull(possibleTraits);
+        if (!possibleTraits.contains(trait)) {
+            throw new IllegalArgumentException("trait must be contained in possible traits");
+        }
+        this.profileId = profileId;
+        this.reportId = reportId;
+        this.description = description;
+        this.trait = trait;
+        this.possibleTraits = ImmutableSet.copyOf(possibleTraits);
     }
 
-    public String getId() {
-        return id;
+    public String getProfileId() {
+        return profileId;
+    }
+
+    public String getReportId() {
+        return reportId;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public String getTrait() {
+        return trait;
+    }
+
+    public Set<String> getPossibleTraits() {
+        return possibleTraits;
     }
 }

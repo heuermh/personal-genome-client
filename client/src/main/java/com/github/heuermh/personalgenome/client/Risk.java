@@ -36,14 +36,40 @@ import com.google.common.collect.ImmutableList;
  */
 @Immutable
 public final class Risk {
-    private final String id;
+    private final String profileId;
+    private final String reportId;
+    private final String description;
+    private final double risk;
+    private final double populationRisk;
 
-    public Risk(final String id) {
-        checkNotNull(id);
-        this.id = id;
+    public Risk(final String profileId, final String reportId, final String description, final double risk, final double populationRisk) {
+        checkNotNull(profileId);
+        checkNotNull(reportId);
+        checkNotNull(description);
+        this.profileId = profileId;
+        this.reportId = reportId;
+        this.description = description;
+        this.risk = risk;
+        this.populationRisk = populationRisk;
     }
 
-    public String getId() {
-        return id;
+    public String getProfileId() {
+        return profileId;
+    }
+
+    public String getReportId() {
+        return reportId;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public double getRisk() {
+        return risk;
+    }
+
+    public double getPopulationRisk() {
+        return populationRisk;
     }
 }

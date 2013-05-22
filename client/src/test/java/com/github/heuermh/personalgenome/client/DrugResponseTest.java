@@ -35,14 +35,32 @@ import org.junit.Test;
 public final class DrugResponseTest {
 
     @Test(expected=NullPointerException.class)
-    public void testConstructorNullId() {
-        new DrugResponse(null);
+    public void testConstructorNullProfileId() {
+        new DrugResponse(null, "reportId", "description", "status");
+    }
+
+    @Test(expected=NullPointerException.class)
+    public void testConstructorNullReportId() {
+        new DrugResponse("profileId", null, "description", "status");
+    }
+
+    @Test(expected=NullPointerException.class)
+    public void testConstructorNullDescription() {
+        new DrugResponse("profileId", "reportId", null, "status");
+    }
+
+    @Test(expected=NullPointerException.class)
+    public void testConstructorNullStatus() {
+        new DrugResponse("profileId", "reportId", "description", null);
     }
 
     @Test
     public void testConstructor() {
-        DrugResponse drugResponse = new DrugResponse("id");
+        DrugResponse drugResponse = new DrugResponse("profileId", "reportId", "description", "status");
         assertNotNull(drugResponse);
-        assertEquals("id", drugResponse.getId());
+        assertEquals("profileId", drugResponse.getProfileId());
+        assertEquals("reportId", drugResponse.getReportId());
+        assertEquals("description", drugResponse.getDescription());
+        assertEquals("status", drugResponse.getStatus());
     }
 }

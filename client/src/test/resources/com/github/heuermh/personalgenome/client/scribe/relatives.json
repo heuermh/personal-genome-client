@@ -1,0 +1,43 @@
+{
+    "id": "18974891hh1f3h",
+    "count": 10,
+    "relatives": [
+        {
+            "match_id": "48f2489h294hf",
+            "first_name": "Aodh",
+            "last_name": "O'Donnell",
+            "sex": "Male",
+            "birth_year": 1977,
+            "birthplace": "United States",
+            "ancestry": "Northern Europe",
+            "family_locations": [
+                "Arlington, VA",
+                "County Louth, Ireland"
+            ],
+            "family_surnames": [
+                "Lindell",
+                "Dillingham",
+                "Kelly"
+            ],
+            "shared_segments": 23,
+            "relationship": "3rd Cousin",
+            "predicted_relationship_code": 32,
+            "user_relationship_code": null,
+            "range": ["3rd Cousin", "6th Cousin"],
+            "similarity": 0.24,
+            "maternal_haplogroup": "K1b1a1",
+            "paternal_haplogroup": "G2a5",
+            "maternal_side": false,
+            "paternal_side": true,
+            "notes": "we have the same familiar surnames",
+            "added": 1348699925,
+            "updated": 1348699975,
+            "residence": "North Carolina",
+            "intro_status": "Introduction Accepted",
+            "share_status": "Sharing Genomes",
+            "profile_picture_urls": {
+                "url_size_40_40": "https://...cfff05bbb_T.0_0_299_299.jpg",
+            }
+        },
+    ]
+}

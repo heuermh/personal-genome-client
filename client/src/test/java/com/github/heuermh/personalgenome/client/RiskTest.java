@@ -35,14 +35,28 @@ import org.junit.Test;
 public final class RiskTest {
 
     @Test(expected=NullPointerException.class)
-    public void testConstructorNullId() {
-        new Risk(null);
+    public void testConstructorNullProfileId() {
+        new Risk(null, "reportId", "description", 0.1d, 0.2d);
+    }
+
+    @Test(expected=NullPointerException.class)
+    public void testConstructorNullReportId() {
+        new Risk("profileId", null, "description", 0.1d, 0.2d);
+    }
+
+    @Test(expected=NullPointerException.class)
+    public void testConstructorNullDescription() {
+        new Risk("profileId", "reportId", null, 0.1d, 0.2d);
     }
 
     @Test
     public void testConstructor() {
-        Risk risk = new Risk("id");
+        Risk risk = new Risk("profileId", "reportId", "description", 0.1d, 0.2d);
         assertNotNull(risk);
-        assertEquals("id", risk.getId());
+        assertEquals("profileId", risk.getProfileId());
+        assertEquals("reportId", risk.getReportId());
+        assertEquals("description", risk.getDescription());
+        assertEquals(0.1d, risk.getRisk(), 0.01d);
+        assertEquals(0.2d, risk.getPopulationRisk(), 0.01d);
     }
 }

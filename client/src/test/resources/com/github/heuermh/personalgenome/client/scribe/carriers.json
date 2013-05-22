@@ -1,0 +1,15 @@
+{
+    "id": "c4480ba411939067",
+    "carriers": [
+        {
+            "description": "Tay-Sachs Disease",
+            "report_id": "tay_sachs",
+            "mutations": 1
+        },
+        {
+            "description": "Cystic Fibrosis",
+            "report_id": "cf_panel",
+            "mutations": 2
+        }
+    ]
+}
