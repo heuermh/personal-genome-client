@@ -36,10 +36,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonToken;
-
 import com.google.common.base.Joiner;
 
 import com.github.heuermh.personalgenome.client.AccessDeniedException;
@@ -56,6 +52,7 @@ import com.github.heuermh.personalgenome.client.MaternalTerminalSnp;
 import com.github.heuermh.personalgenome.client.PaternalTerminalSnp;
 import com.github.heuermh.personalgenome.client.PersonalGenomeClient;
 import com.github.heuermh.personalgenome.client.PersonalGenomeClientException;
+import com.github.heuermh.personalgenome.client.PersonalGenomeConverter;
 import com.github.heuermh.personalgenome.client.Profile;
 import com.github.heuermh.personalgenome.client.ProfileName;
 import com.github.heuermh.personalgenome.client.Relative;
@@ -82,7 +79,7 @@ import org.slf4j.LoggerFactory;
 public final class ScribePersonalGenomeClient implements PersonalGenomeClient {
     private final Token accessToken;
     private final OAuthService service;
-    private final JsonFactory jsonFactory;
+    private final PersonalGenomeConverter converter;
     private final Logger logger = LoggerFactory.getLogger(ScribePersonalGenomeClient.class);
     private static final String USER_URL = "https://api.23andme.com/1/user";
     private static final String NAMES_URL = "https://api.23andme.com/1/names/%s/";
@@ -98,13 +95,13 @@ public final class ScribePersonalGenomeClient implements PersonalGenomeClient {
     private static final String TRAITS_URL = "https://api.23andme.com/1/traits/%s/";
 
     //@Inject
-    public ScribePersonalGenomeClient(final Token accessToken, final OAuthService service, final JsonFactory jsonFactory) {
+    public ScribePersonalGenomeClient(final Token accessToken, final OAuthService service, final PersonalGenomeConverter converter) {
         checkNotNull(accessToken);
         checkNotNull(service);
-        checkNotNull(jsonFactory);
+        checkNotNull(converter);
         this.accessToken = accessToken;
         this.service = service;
-        this.jsonFactory = jsonFactory;
+        this.converter = converter;
     }
 
     @Override
@@ -115,10 +112,10 @@ public final class ScribePersonalGenomeClient implements PersonalGenomeClient {
 
         if (code == 200) {
             logger.trace("user call ok");
-            return parseUser(response.getStream());
+            return converter.parseUser(response.getStream());
         }
         logger.warn("could not call user, response code " + code);
-        throw parseException(response.getStream());
+        throw converter.parseException(response.getStream());
     }
 
     @Override
@@ -130,10 +127,10 @@ public final class ScribePersonalGenomeClient implements PersonalGenomeClient {
 
         if (code == 200) {
             logger.trace("names call ok");
-            return parseNames(response.getStream());
+            return converter.parseNames(response.getStream());
         }
         logger.warn("could not call names, response code " + code);
-        throw parseException(response.getStream());
+        throw converter.parseException(response.getStream());
     }
 
     @Override
@@ -145,10 +142,10 @@ public final class ScribePersonalGenomeClient implements PersonalGenomeClient {
 
         if (code == 200) {
             logger.trace("haplogroups call ok");
-            return parseHaplogroups(response.getStream());
+            return converter.parseHaplogroups(response.getStream());
         }
         logger.warn("could not call haplogroups, response code " + code);
-        throw parseException(response.getStream());
+        throw converter.parseException(response.getStream());
     }
 
     @Override
@@ -172,10 +169,10 @@ public final class ScribePersonalGenomeClient implements PersonalGenomeClient {
 
         if (code == 200) {
             logger.trace("genotype call ok");
-            return parseGenotypes(response.getStream());
+            return converter.parseGenotypes(response.getStream());
         }
         logger.warn("could not call genotype, response code " + code);
-        throw parseException(response.getStream());
+        throw converter.parseException(response.getStream());
     }
 
     @Override
@@ -187,10 +184,10 @@ public final class ScribePersonalGenomeClient implements PersonalGenomeClient {
 
         if (code == 200) {
             logger.trace("genomes call ok");
-            return parseGenomes(response.getStream());
+            return converter.parseGenomes(response.getStream());
         }
         logger.warn("could not call genomes, response code " + code);
-        throw parseException(response.getStream());
+        throw converter.parseException(response.getStream());
     }
 
     @Override
@@ -205,10 +202,10 @@ public final class ScribePersonalGenomeClient implements PersonalGenomeClient {
 
         if (code == 200) {
             logger.trace("ancestry call ok");
-            return parseAncestry(response.getStream());
+            return converter.parseAncestry(response.getStream());
         }
         logger.warn("could not call ancestry, response code " + code);
-        throw parseException(response.getStream());
+        throw converter.parseException(response.getStream());
     }
 
     @Override
@@ -220,10 +217,10 @@ public final class ScribePersonalGenomeClient implements PersonalGenomeClient {
 
         if (code == 200) {
             logger.trace("neanderthal proportion call ok");
-            return parseNeanderthalProportion(response.getStream());
+            return converter.parseNeanderthalProportion(response.getStream());
         }
         logger.warn("could not call neanderthal proportion, response code " + code);
-        throw parseException(response.getStream());
+        throw converter.parseException(response.getStream());
     }
 
     @Override
@@ -235,10 +232,10 @@ public final class ScribePersonalGenomeClient implements PersonalGenomeClient {
 
         if (code == 200) {
             logger.trace("relatives call ok");
-            return parseRelatives(response.getStream()).iterator();
+            return converter.parseRelatives(response.getStream()).iterator();
         }
         logger.warn("could not call relatives, response code " + code);
-        throw parseException(response.getStream());
+        throw converter.parseException(response.getStream());
     }
 
     @Override
@@ -251,10 +248,10 @@ public final class ScribePersonalGenomeClient implements PersonalGenomeClient {
 
         if (code == 200) {
             logger.trace("relatives call ok");
-            return parseRelatives(response.getStream());
+            return converter.parseRelatives(response.getStream());
         }
         logger.warn("could not call relatives, response code " + code);
-        throw parseException(response.getStream());
+        throw converter.parseException(response.getStream());
     }
 
     @Override
@@ -266,10 +263,10 @@ public final class ScribePersonalGenomeClient implements PersonalGenomeClient {
 
         if (code == 200) {
             logger.trace("risks call ok");
-            return parseRisks(response.getStream());
+            return converter.parseRisks(response.getStream());
         }
         logger.warn("could not call risks, response code " + code);
-        throw parseException(response.getStream());
+        throw converter.parseException(response.getStream());
     }
 
     @Override
@@ -281,10 +278,10 @@ public final class ScribePersonalGenomeClient implements PersonalGenomeClient {
 
         if (code == 200) {
             logger.trace("carriers call ok");
-            return parseCarriers(response.getStream());
+            return converter.parseCarriers(response.getStream());
         }
         logger.warn("could not call carriers, response code " + code);
-        throw parseException(response.getStream());
+        throw converter.parseException(response.getStream());
     }
 
     @Override
@@ -296,10 +293,10 @@ public final class ScribePersonalGenomeClient implements PersonalGenomeClient {
 
         if (code == 200) {
             logger.trace("drug responses call ok");
-            return parseDrugResponses(response.getStream());
+            return converter.parseDrugResponses(response.getStream());
         }
         logger.warn("could not call drug responses, response code " + code);
-        throw parseException(response.getStream());
+        throw converter.parseException(response.getStream());
     }
 
     @Override
@@ -311,10 +308,10 @@ public final class ScribePersonalGenomeClient implements PersonalGenomeClient {
 
         if (code == 200) {
             logger.trace("traits call ok");
-            return parseTraits(response.getStream());
+            return converter.parseTraits(response.getStream());
         }
         logger.warn("could not call traits, response code " + code);
-        throw parseException(response.getStream());
+        throw converter.parseException(response.getStream());
     }
 
     OAuthRequest createAndSignRequest(final String url) {
@@ -322,784 +319,5 @@ public final class ScribePersonalGenomeClient implements PersonalGenomeClient {
         request.addHeader("Authorization", String.format("Bearer %s", accessToken.getToken()));
         service.signRequest(accessToken, request);
         return request;
-    }
-
-    PersonalGenomeClientException parseException(final InputStream inputStream) {
-        JsonParser parser = null;
-        try {
-            parser = jsonFactory.createJsonParser(inputStream);
-            parser.nextToken();
-
-            String error = null;
-            String errorDescription = null;
-            while (parser.nextToken() != JsonToken.END_OBJECT) {
-                String field = parser.getCurrentName();
-                parser.nextToken();
-
-                if ("error".equals(field)) {
-                    error = parser.getText();
-                }
-                else if ("error_description".equals(field)) {
-                    errorDescription = parser.getText();
-                }
-            }
-            if ("access_denied".equals(error)) {
-                return new AccessDeniedException(errorDescription);
-            }
-            else if ("invalid_client".equals(error)) {
-                return new InvalidClientException(errorDescription);
-            }
-            else if ("invalid_request".equals(error)) {
-                return new InvalidRequestException(errorDescription);
-            }
-            else if ("invalid_scope".equals(error)) {
-                return new InvalidScopeException(errorDescription);
-            }
-            return new PersonalGenomeClientException(errorDescription);
-        }
-        catch (IOException e) {
-            logger.warn("could not parse exception", e);
-        }
-        finally {
-            try {
-                inputStream.close();
-            }
-            catch (Exception e) {
-                // ignored
-            }
-            try {
-                parser.close();
-            }
-            catch (Exception e) {
-                // ignored
-            }
-        }
-        return new PersonalGenomeClientException("unknown error");
-    }
-
-    User parseUser(final InputStream inputStream) {
-        JsonParser parser = null;
-        try {
-            parser = jsonFactory.createJsonParser(inputStream);
-            parser.nextToken();
-
-            String id = null;
-            String profileId = null;
-            boolean genotyped = false;
-            List<Profile> profiles = new ArrayList<Profile>();
-
-            while (parser.nextToken() != JsonToken.END_OBJECT) {
-                String field = parser.getCurrentName();
-                parser.nextToken();
-                if ("id".equals(field)) {
-                    id = parser.getText();
-                }
-                else if ("profiles".equals(field)) {
-                    while (parser.nextToken() != JsonToken.END_ARRAY) {
-                        while (parser.nextToken() != JsonToken.END_OBJECT) {
-                            String profileField = parser.getCurrentName();
-                            parser.nextToken();
-                            if ("id".equals(profileField)) {
-                                profileId = parser.getText();
-                            }
-                            else if ("genotyped".equals(profileField)) {
-                                genotyped = parser.getBooleanValue();
-                            }
-                        }
-                        profiles.add(new Profile(profileId, genotyped));
-                    }
-                }
-            }
-            return new User(id, profiles);
-        }
-        catch (IOException e) {
-            logger.warn("could not parse user", e);
-        }
-        finally {
-            try {
-                inputStream.close();
-            }
-            catch (Exception e) {
-                // ignored
-            }
-            try {
-                parser.close();
-            }
-            catch (Exception e) {
-                // ignored
-            }
-        }
-        return null;
-    }
-
-    UserName parseNames(final InputStream inputStream) {
-        JsonParser parser = null;
-        try {
-            parser = jsonFactory.createJsonParser(inputStream);
-            parser.nextToken();
-
-            String id = null;
-            String firstName = null;
-            String lastName = null;
-            String profileId = null;
-            String profileFirstName = null;
-            String profileLastName = null;
-            List<ProfileName> profileNames = new ArrayList<ProfileName>();
-
-            while (parser.nextToken() != JsonToken.END_OBJECT) {
-                String field = parser.getCurrentName();
-                parser.nextToken();
-                if ("id".equals(field)) {
-                    id = parser.getText();
-                }
-                else if ("first_name".equals(field)) {
-                    firstName = parser.getText();
-                }
-                else if ("last_name".equals(field)) {
-                    lastName = parser.getText();
-                }
-                else if ("profiles".equals(field)) {
-                    while (parser.nextToken() != JsonToken.END_ARRAY) {
-                        while (parser.nextToken() != JsonToken.END_OBJECT) {
-                            String profileNameField = parser.getCurrentName();
-                            parser.nextToken();
-                            if ("id".equals(profileNameField)) {
-                                profileId = parser.getText();
-                            }
-                            else if ("first_name".equals(profileNameField)) {
-                                profileFirstName = parser.getText();
-                            }
-                            else if ("last_name".equals(profileNameField)) {
-                                profileLastName = parser.getText();
-                            }
-                        }
-                        profileNames.add(new ProfileName(profileId, profileFirstName, profileLastName));
-                    }
-                }
-            }
-            return new UserName(id, firstName, lastName, profileNames);
-        }
-        catch (IOException e) {
-            logger.warn("could not parse names", e);
-        }
-        finally {
-            try {
-                inputStream.close();
-            }
-            catch (Exception e) {
-                // ignored
-            }
-            try {
-                parser.close();
-            }
-            catch (Exception e) {
-                // ignored
-            }
-        }
-        return null;
-    }
-
-    Haplogroup parseHaplogroups(final InputStream inputStream) {
-        JsonParser parser = null;
-        try {
-            parser = jsonFactory.createJsonParser(inputStream);
-            parser.nextToken();
-
-            String id = null;
-            String maternal = null;
-            String paternal = null;
-            String rsid = null;
-            String rcrsPosition = null;
-            String snp = null;
-            List<PaternalTerminalSnp> paternalTerminalSnps = new ArrayList<PaternalTerminalSnp>();
-            List<MaternalTerminalSnp> maternalTerminalSnps = new ArrayList<MaternalTerminalSnp>();
-
-            while (parser.nextToken() != JsonToken.END_OBJECT) {
-                String field = parser.getCurrentName();
-                parser.nextToken();
-
-                if ("id".equals(field)) {
-                    id = parser.getText();
-                }
-                else if ("maternal".equals(field)) {
-                    maternal = parser.getText();
-                }
-                else if ("paternal".equals(field)) {
-                    paternal = "null" == parser.getText() ? null : parser.getText();
-                }
-                else if ("maternal_terminal_snps".equals(field)) {
-                    while (parser.nextToken() != JsonToken.END_ARRAY) {
-                        while (parser.nextToken() != JsonToken.END_OBJECT) {
-                            String maternalTerminalSnpsField = parser.getCurrentName();
-                            parser.nextToken();
-
-                            if ("rsid".equals(maternalTerminalSnpsField)) {
-                                rsid = parser.getText();
-                            }
-                            else if ("rcrs_position".equals(maternalTerminalSnpsField)) {
-                                rcrsPosition = parser.getText();
-                            }
-                        }
-                        maternalTerminalSnps.add(new MaternalTerminalSnp(rsid, rcrsPosition));
-                    }
-                }
-                else if ("paternal_terminal_snps".equals(field)) {
-                    while (parser.nextToken() != JsonToken.END_ARRAY) {
-                        while (parser.nextToken() != JsonToken.END_OBJECT) {
-                            String paternalTerminalSnpsField = parser.getCurrentName();
-                            parser.nextToken();
-
-                            if ("rsid".equals(paternalTerminalSnpsField)) {
-                                rsid = parser.getText();
-                            }
-                            else if ("snp".equals(paternalTerminalSnpsField)) {
-                                snp = parser.getText();
-                            }
-                        }
-                        paternalTerminalSnps.add(new PaternalTerminalSnp(rsid, snp));
-                    }
-                }
-            }
-            return new Haplogroup(id, paternal, maternal, paternalTerminalSnps, maternalTerminalSnps);
-        }
-        catch (IOException e) {
-            logger.warn("could not parse haplogroups", e);
-        }
-        finally {
-            try {
-                inputStream.close();
-            }
-            catch (Exception e) {
-                // ignored
-            }
-            try {
-                parser.close();
-            }
-            catch (Exception e) {
-                // ignored
-            }
-        }
-        return null;
-    }
-
-    Genotype parseGenotypes(final InputStream inputStream) {
-        JsonParser parser = null;
-        try {
-            parser = jsonFactory.createJsonParser(inputStream);
-            parser.nextToken();
-
-            String id = null;
-            String location = null;
-            String interpretation = null;
-            Map<String, String> values = new HashMap<String, String>();
-
-            while (parser.nextToken() != JsonToken.END_OBJECT) {
-                String field = parser.getCurrentName();
-                parser.nextToken();
-
-                if ("id".equals(field)) {
-                    id = parser.getText();
-                }
-                else {
-                    location = field;
-                    interpretation = parser.getText();
-                    values.put(location, interpretation);
-                }
-            }
-            return new Genotype(id, values);
-        }
-        catch (IOException e) {
-            logger.warn("could not parse genotypes");
-        }
-        finally {
-            try {
-                inputStream.close();
-            }
-            catch (Exception e) {
-                // ignored
-            }
-            try {
-                parser.close();
-            }
-            catch (Exception e) {
-                // ignored
-            }
-        }
-        return null;
-    }
-
-    Genome parseGenomes(final InputStream inputStream) {
-        JsonParser parser = null;
-        try {
-            parser = jsonFactory.createJsonParser(inputStream);
-            parser.nextToken();
-
-            String id = null;
-            String values = null;
-            while (parser.nextToken() != JsonToken.END_OBJECT) {
-                String field = parser.getCurrentName();
-                parser.nextToken();
-
-                if ("id".equals(field)) {
-                    id = parser.getText();
-                }
-                else if ("genome".equals(field)) {
-                    values = parser.getText();
-                }
-            }
-            return new Genome(id, values);
-        }
-        catch (IOException e) {
-            logger.warn("could not parse genomes", e);
-        }
-        finally {
-            try {
-                inputStream.close();
-            }
-            catch (Exception e) {
-                // ignored
-            }
-            try {
-                parser.close();
-            }
-            catch (Exception e) {
-                // ignored
-            }
-        }
-        return null;
-    }
-
-    List<Ancestry> parseSubPopulation(final String id, final List<Ancestry> ancestries, final JsonParser parser) throws IOException {
-        String label = null;
-        double proportion = 0.0d;
-        double unassigned = 0.0d;
-        List<Ancestry> subPopulations = new ArrayList<Ancestry>();
-        while (parser.nextToken() != JsonToken.END_ARRAY) {
-            while (parser.nextToken() != JsonToken.END_OBJECT) {
-                String field = parser.getCurrentName();
-                parser.nextToken();
-
-                if ("label".equals(field)) {
-                    label = parser.getText();
-                }
-                else if ("proportion".equals(field)) {
-                    proportion = Double.parseDouble(parser.getText());
-                }
-                else if ("unassigned".equals(field)) {
-                    unassigned = Double.parseDouble(parser.getText());
-                }
-                else if ("sub_populations".equals(field)) {
-                    subPopulations = parseSubPopulation(id, subPopulations, parser);
-                }
-            }
-            Ancestry ancestry = new Ancestry(id, label, proportion, unassigned, subPopulations);
-            ancestries.add(ancestry);
-            label = null;
-            proportion = 0.0d;
-            unassigned = 0.0d;
-            subPopulations.clear();
-        }
-        return ancestries;
-    }
-
-    Ancestry parseAncestry(final InputStream inputStream) {
-        JsonParser parser = null;
-        try {
-            parser = jsonFactory.createJsonParser(inputStream);
-            parser.nextToken();
-
-            String id = null;
-            String label = null;
-            double proportion = 0.0d;
-            double unassigned = 0.0d;
-            List<Ancestry> subPopulations = new ArrayList<Ancestry>();
-            while (parser.nextToken() != JsonToken.END_OBJECT) {
-                String field = parser.getCurrentName();
-                parser.nextToken();
-
-                if ("id".equals(field)) {
-                    id = parser.getText();
-                }
-                else if ("ancestry".equals(field)) {
-                    while (parser.nextToken() != JsonToken.END_OBJECT) {
-                        String ancestryField = parser.getCurrentName();
-                        parser.nextToken();
-
-                        if ("label".equals(ancestryField)) {
-                            label = parser.getText();
-                        }
-                        else if ("proportion".equals(ancestryField)) {
-                            proportion = Double.parseDouble(parser.getText());
-                        }
-                        else if ("unassigned".equals(ancestryField)) {
-                            unassigned = Double.parseDouble(parser.getText());
-                        }
-                        else if ("sub_populations".equals(ancestryField)) {
-                            subPopulations = parseSubPopulation(id, subPopulations, parser);
-                        }
-                    }
-                }
-            }
-            return new Ancestry(id, label, proportion, unassigned, subPopulations);
-        }
-        catch (IOException e) {
-            logger.warn("could not parse ancestry", e);
-        }
-        finally {
-            try {
-                inputStream.close();
-            }
-            catch (Exception e) {
-                // ignored
-            }
-            try {
-                parser.close();
-            }
-            catch (Exception e) {
-                // ignored
-            }
-        }
-        return null;
-    }
-
-    double parseNeanderthalProportion(final InputStream inputStream) {
-        JsonParser parser = null;
-        try {
-            parser = jsonFactory.createJsonParser(inputStream);
-            parser.nextToken();
-
-            String id = null;
-            double proportion = -1d;
-            while (parser.nextToken() != JsonToken.END_OBJECT) {
-                String field = parser.getCurrentName();
-                parser.nextToken();
-
-                if ("id".equals(field)) {
-                    id = parser.getText();
-                }
-                else if ("neanderthal".equals(field)) {
-                    while (parser.nextToken() != JsonToken.END_OBJECT) {
-                        String neanderthalField = parser.getCurrentName();
-                        parser.nextToken();
-
-                        if ("proportion".equals(neanderthalField)) {
-                            proportion = Double.parseDouble(parser.getText());
-                        }
-                    }
-                }
-            }
-            return proportion;
-        }
-        catch (IOException e) {
-            logger.warn("could not parse neanderthal proportion", e);
-        }
-        finally {
-            try {
-                inputStream.close();
-            }
-            catch (Exception e) {
-                // ignored
-            }
-            try {
-                parser.close();
-            }
-            catch (Exception e) {
-                // ignored
-            }
-        }
-        return -1d;
-    }
-
-    List<Relative> parseRelatives(final InputStream inputStream) {
-        JsonParser parser = null;
-        try {
-            parser = jsonFactory.createJsonParser(inputStream);
-            parser.nextToken();
-
-            List<Relative> relatives = new ArrayList<Relative>();
-            return relatives;
-        }
-        catch (IOException e) {
-            logger.warn("could not parse relatives", e);
-        }
-        finally {
-            try {
-                inputStream.close();
-            }
-            catch (Exception e) {
-                // ignored
-            }
-            try {
-                parser.close();
-            }
-            catch (Exception e) {
-                // ignored
-            }
-        }
-        return null;
-    }
-
-    List<Risk> parseRisks(final InputStream inputStream) {
-        JsonParser parser = null;
-        try {
-            parser = jsonFactory.createJsonParser(inputStream);
-            parser.nextToken();
-
-            String id = null;
-            String reportId = null;
-            String description = null;
-            double risk = 0.0d;
-            double populationRisk = 0.0d;
-            List<Risk> risks = new ArrayList<Risk>();
-            while (parser.nextToken() != JsonToken.END_OBJECT) {
-                String field = parser.getCurrentName();
-                parser.nextToken();
-
-                if ("id".equals(field)) {
-                    id = parser.getText();
-                }
-                else if ("risks".equals(field)) {
-                    while (parser.nextToken() != JsonToken.END_ARRAY) {
-                        while (parser.nextToken() != JsonToken.END_OBJECT) {
-                            String riskField = parser.getCurrentName();
-                            parser.nextToken();
-
-                            if ("report_id".equals(riskField)) {
-                                reportId = parser.getText();
-                            }
-                            else if ("description".equals(riskField)) {
-                                description = parser.getText();
-                            }
-                            else if ("risk".equals(riskField)) {
-                                risk = Double.parseDouble(parser.getText());
-                            }
-                            else if ("population_risk".equals(riskField)) {
-                                populationRisk = Double.parseDouble(parser.getText());
-                            }
-                        }
-                        risks.add(new Risk(id, reportId, description, risk, populationRisk));
-                        reportId = null;
-                        description = null;
-                        risk = 0.0d;
-                        populationRisk = 0.0d;
-                    }
-                }
-            }
-            return risks;
-        }
-        catch (IOException e) {
-            logger.warn("could not parse risks", e);
-        }
-        finally {
-            try {
-                inputStream.close();
-            }
-            catch (Exception e) {
-                // ignored
-            }
-            try {
-                parser.close();
-            }
-            catch (Exception e) {
-                // ignored
-            }
-        }
-        return null;
-    }
-
-    List<Carrier> parseCarriers(final InputStream inputStream) {
-        JsonParser parser = null;
-        try {
-            parser = jsonFactory.createJsonParser(inputStream);
-            parser.nextToken();
-
-            String id = null;
-            String reportId = null;
-            String description = null;
-            int mutations = 0;
-            List<Carrier> carriers = new ArrayList<Carrier>();
-            while (parser.nextToken() != JsonToken.END_OBJECT) {
-                String field = parser.getCurrentName();
-                parser.nextToken();
-
-                if ("id".equals(field)) {
-                    id = parser.getText();
-                }
-                else if ("carriers".equals(field)) {
-                    while (parser.nextToken() != JsonToken.END_ARRAY) {
-                        while (parser.nextToken() != JsonToken.END_OBJECT) {
-                            String carrierField = parser.getCurrentName();
-                            parser.nextToken();
-
-                            if ("report_id".equals(carrierField)) {
-                                reportId = parser.getText();
-                            }
-                            else if ("description".equals(carrierField)) {
-                                description = parser.getText();
-                            }
-                            else if ("mutations".equals(carrierField)) {
-                                mutations = Integer.parseInt(parser.getText());
-                            }
-                        }
-                        carriers.add(new Carrier(id, reportId, description, mutations));
-                        reportId = null;
-                        description = null;
-                        mutations = 0;
-                    }
-                }
-            }
-            return carriers;
-        }
-        catch (IOException e) {
-            logger.warn("could not parse carriers", e);
-        }
-        finally {
-            try {
-                inputStream.close();
-            }
-            catch (Exception e) {
-                // ignored
-            }
-            try {
-                parser.close();
-            }
-            catch (Exception e) {
-                // ignored
-            }
-        }
-        return null;
-    }
-
-    List<DrugResponse> parseDrugResponses(final InputStream inputStream) {
-        JsonParser parser = null;
-        try {
-            parser = jsonFactory.createJsonParser(inputStream);
-            parser.nextToken();
-
-            String id = null;
-            String reportId = null;
-            String description = null;
-            String status = null;
-            List<DrugResponse> drugResponses = new ArrayList<DrugResponse>();
-            while (parser.nextToken() != JsonToken.END_OBJECT) {
-                String field = parser.getCurrentName();
-                parser.nextToken();
-
-                if ("id".equals(field)) {
-                    id = parser.getText();
-                }
-                else if ("drug_responses".equals(field)) {
-                    while (parser.nextToken() != JsonToken.END_ARRAY) {
-                        while (parser.nextToken() != JsonToken.END_OBJECT) {
-                            String drugResponseField = parser.getCurrentName();
-                            parser.nextToken();
-
-                            if ("report_id".equals(drugResponseField)) {
-                                reportId = parser.getText();
-                            }
-                            else if ("description".equals(drugResponseField)) {
-                                description = parser.getText();
-                            }
-                            else if ("status".equals(drugResponseField)) {
-                                status = parser.getText();
-                            }
-                        }
-                        drugResponses.add(new DrugResponse(id, reportId, description, status));
-                        reportId = null;
-                        description = null;
-                        status = null;
-                    }
-                }
-            }
-            return drugResponses;
-        }
-        catch (IOException e) {
-            logger.warn("could not parse drug responses", e);
-        }
-        finally {
-            try {
-                inputStream.close();
-            }
-            catch (Exception e) {
-                // ignored
-            }
-            try {
-                parser.close();
-            }
-            catch (Exception e) {
-                // ignored
-            }
-        }
-        return null;
-    }
-
-    List<Trait> parseTraits(final InputStream inputStream) {
-        JsonParser parser = null;
-        try {
-            parser = jsonFactory.createJsonParser(inputStream);
-            parser.nextToken();
-
-            String id = null;
-            String reportId = null;
-            String description = null;
-            String trait = null;
-            Set<String> possibleTraits = new HashSet<String>();
-            List<Trait> traits = new ArrayList<Trait>();
-            while (parser.nextToken() != JsonToken.END_OBJECT) {
-                String field = parser.getCurrentName();
-                parser.nextToken();
-
-                if ("id".equals(field)) {
-                    id = parser.getText();
-                }
-                else if ("traits".equals(field)) {
-                    while (parser.nextToken() != JsonToken.END_ARRAY) {
-                        while (parser.nextToken() != JsonToken.END_OBJECT) {
-                            String traitField = parser.getCurrentName();
-                            parser.nextToken();
-
-                            if ("report_id".equals(traitField)) {
-                                reportId = parser.getText();
-                            }
-                            else if ("description".equals(traitField)) {
-                                description = parser.getText();
-                            }
-                            else if ("trait".equals(traitField)) {
-                                trait = parser.getText();
-                            }
-                            else if ("possible_traits".equals(traitField)) {
-                                while (parser.nextToken() != JsonToken.END_ARRAY) {
-                                    possibleTraits.add(parser.getText());
-                                }
-                            }
-                        }
-                        traits.add(new Trait(id, reportId, description, trait, possibleTraits));
-                        reportId = null;
-                        description = null;
-                        trait = null;
-                        possibleTraits.clear();
-                    }
-                }
-            }
-            return traits;
-        }
-        catch (IOException e) {
-            logger.warn("could not parse traits", e);
-        }
-        finally {
-            try {
-                inputStream.close();
-            }
-            catch (Exception e) {
-                // ignored
-            }
-            try {
-                parser.close();
-            }
-            catch (Exception e) {
-                // ignored
-            }
-        }
-        return null;
     }
 }

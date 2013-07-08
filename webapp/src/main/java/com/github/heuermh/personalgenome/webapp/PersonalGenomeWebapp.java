@@ -30,6 +30,7 @@ import java.util.List;
 
 import com.github.heuermh.personalgenome.client.Genotype;
 import com.github.heuermh.personalgenome.client.PersonalGenomeClient;
+import com.github.heuermh.personalgenome.client.PersonalGenomeConverter;
 import com.github.heuermh.personalgenome.client.Profile;
 import com.github.heuermh.personalgenome.client.User;
 
@@ -38,8 +39,6 @@ import com.github.heuermh.personalgenome.client.scribe.ScribePersonalGenomeClien
 
 import com.google.inject.Guice;
 import com.google.inject.Injector;
-
-import com.fasterxml.jackson.core.JsonFactory;
 
 import org.nnsoft.guice.rocoto.configuration.ConfigurationModule;
 
@@ -73,7 +72,7 @@ public final class PersonalGenomeWebapp {
 
         final Injector injector = Guice.createInjector(new ParameterModule(), new ScribeModule());
         final OAuthService service = injector.getInstance(OAuthService.class);
-        final JsonFactory jsonFactory = injector.getInstance(JsonFactory.class);
+        final PersonalGenomeConverter converter = injector.getInstance(PersonalGenomeConverter.class);
 
         get(new Route("/") {
                 @Override
@@ -99,7 +98,7 @@ public final class PersonalGenomeWebapp {
                     Token accessToken = service.getAccessToken(EMPTY_TOKEN, verifier);
                     logger.info("received access token " + accessToken);
 
-                    PersonalGenomeClient client = new ScribePersonalGenomeClient(accessToken, service, jsonFactory);
+                    PersonalGenomeClient client = new ScribePersonalGenomeClient(accessToken, service, converter);
 
                     User user = client.user();
                     logger.info("retrieved user id " + user.getId());

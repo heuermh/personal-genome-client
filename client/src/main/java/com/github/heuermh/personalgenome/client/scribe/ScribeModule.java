@@ -25,6 +25,9 @@ package com.github.heuermh.personalgenome.client.scribe;
 
 import com.fasterxml.jackson.core.JsonFactory;
 
+import com.github.heuermh.personalgenome.client.PersonalGenomeConverter;
+import com.github.heuermh.personalgenome.client.converter.JacksonPersonalGenomeConverter;
+
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
@@ -61,5 +64,10 @@ public final class ScribeModule extends AbstractModule {
             .callback(callback)
             .scope(scope)
             .build();
+    }
+
+    @Provides @Singleton
+    PersonalGenomeConverter createPersonalGenomeConverter(final JsonFactory jsonFactory) {
+        return new JacksonPersonalGenomeConverter(jsonFactory);
     }
 }

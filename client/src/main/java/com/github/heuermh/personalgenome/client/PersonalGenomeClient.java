@@ -64,6 +64,7 @@ public interface PersonalGenomeClient {
      *    or parameter value, or is otherwise malformed
      * @throws InvalidScopeException if the requested scope is invalid, unknown, or malformed
      */
+    // or use Profile instead of profileId
     UserName names(String profileId);
 
     /**
