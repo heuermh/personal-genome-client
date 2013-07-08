@@ -45,8 +45,8 @@ in a browser.
 
     OAuthService service = ...;
     Token accessToken = ...;
-    JsonFactory = new JsonFactory();
-    PersonalGenomeClient client = new ScribePersonalGenomeClient(accessToken, service, jsonFactory);
+    PersonalGenomeConverter converter = ...;
+    PersonalGenomeClient client = new ScribePersonalGenomeClient(accessToken, service, converter);
     
     User user = client.user();
     System.out.println("user id: " + user.getId());
