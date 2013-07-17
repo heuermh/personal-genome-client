@@ -56,7 +56,6 @@ import com.github.heuermh.personalgenome.client.UserName;
 
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -257,7 +256,7 @@ public final class JacksonPersonalGenomeConverterTest {
         assertEquals(0.0310d, neanderthalProportion, 0.1d);
     }
 
-    @Ignore
+    @Test
     public void testParseRelatives() {
         InputStream inputStream = getClass().getResourceAsStream("relatives.json");
         List<Relative> relatives = converter.parseRelatives(inputStream);

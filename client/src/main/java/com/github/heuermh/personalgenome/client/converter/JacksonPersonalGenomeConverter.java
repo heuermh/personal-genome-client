@@ -58,6 +58,7 @@ import com.github.heuermh.personalgenome.client.PersonalGenomeConverter;
 import com.github.heuermh.personalgenome.client.Profile;
 import com.github.heuermh.personalgenome.client.ProfileName;
 import com.github.heuermh.personalgenome.client.Relative;
+import com.github.heuermh.personalgenome.client.Relationship;
 import com.github.heuermh.personalgenome.client.Risk;
 import com.github.heuermh.personalgenome.client.Trait;
 import com.github.heuermh.personalgenome.client.User;
@@ -597,6 +598,82 @@ public final class JacksonPersonalGenomeConverter implements PersonalGenomeConve
             parser.nextToken();
 
             List<Relative> relatives = new ArrayList<Relative>();
+
+            String profileId = null;
+            String matchId = null;
+            double similarity = 0.0d;
+            int sharedSegments = 0;
+            Relationship relationship = null;
+            Relationship userRelationship = null;
+            Set<Relationship> range = new HashSet<Relationship>();
+
+            while (parser.nextToken() != JsonToken.END_OBJECT) {
+                String field = parser.getCurrentName();
+                parser.nextToken();
+
+                if ("id".equals(field)) {
+                    profileId = parser.getText();
+                }
+                else if ("relatives".equals(field)) {
+                    while (parser.nextToken() != JsonToken.END_ARRAY) {
+                        while (parser.nextToken() != JsonToken.END_OBJECT) {
+                            String relativeField = parser.getCurrentName();
+                            parser.nextToken();
+
+                            if ("match_id".equals(relativeField)) {
+                                matchId = parser.getText();
+                            }
+                            else if ("similarity".equals(relativeField)) {
+                                similarity = Double.parseDouble(parser.getText());
+                            }
+                            else if ("shared_segments".equals(relativeField)) {
+                                sharedSegments = parser.getIntValue();
+                            }
+                            else if ("relationship".equals(relativeField)) {
+                                relationship = Relationship.fromDescription(parser.getText());
+                            }
+                            else if ("user_relationship_code".equals(relativeField)) {
+                                String code = parser.getText();
+                                userRelationship = code == "null" ? null : Relationship.fromCode(Integer.parseInt(code));
+                            }
+                            else if ("predicted_relationship_code".equals(relativeField)) {
+                                if (relationship == null) {
+                                    String code = parser.getText();
+                                    relationship = code == "null" ? null : Relationship.fromCode(Integer.parseInt(code));
+                                }
+                            }
+                            else if ("range".equals(relativeField)) {
+                                while (parser.nextToken() != JsonToken.END_ARRAY) {
+                                    range.add(Relationship.fromDescription(parser.getText()));
+                                }
+                            }
+                            // ignored nested fields
+                            else if ("family_locations".equals(relativeField)) {
+                                while (parser.nextToken() != JsonToken.END_ARRAY) {
+                                    // ignore
+                                }
+                            }
+                            else if ("family_surnames".equals(relativeField)) {
+                                while (parser.nextToken() != JsonToken.END_ARRAY) {
+                                    // ignore
+                                }
+                            }
+                            else if ("profile_picture_urls".equals(relativeField)) {
+                                while (parser.nextToken() != JsonToken.END_OBJECT) {
+                                    // ignore
+                                }
+                            }
+                        }
+                    }
+                    relatives.add(new Relative(profileId, matchId, similarity, sharedSegments, relationship, userRelationship, range));
+                    matchId = null;
+                    similarity = 0.0d;
+                    sharedSegments = 0;
+                    relationship = null;
+                    userRelationship = null;
+                    range.clear();
+                }
+            }
             return relatives;
         }
         catch (IOException e) {

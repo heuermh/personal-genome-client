@@ -226,6 +226,7 @@ public final class ScribePersonalGenomeClient implements PersonalGenomeClient {
     @Override
     public Iterator<Relative> relatives(final String profileId) {
         checkNotNull(profileId);
+        // todo: used chunked iterator
         OAuthRequest request = createAndSignRequest(String.format(RELATIVES_URL, profileId, 0, 100));
         Response response = request.send();
         int code = response.getCode();
