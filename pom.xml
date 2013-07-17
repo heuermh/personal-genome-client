@@ -43,13 +43,6 @@
     <module>webapp</module>
   </modules>
 
-  <repositories>
-    <repository>
-      <id>Spark repository</id>
-      <url>http://www.sparkjava.com/nexus/content/repositories/spark/</url>
-    </repository>
-  </repositories>
-
   <build>
    <pluginManagement>
       <plugins>
@@ -243,9 +236,25 @@
         <version>3.0</version>
       </dependency>
       <dependency>
+        <groupId>com.sparkjava</groupId>
+        <artifactId>spark-core</artifactId>
+        <version>1.0</version>
+        <!-- override transitive dependency on slf4j 1.7.2 -->
+        <exclusions>
+          <exclusion>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+      <dependency>
         <groupId>junit</groupId>
         <artifactId>junit</artifactId>
-        <version>4.10</version>
+        <version>4.11</version>
       </dependency>
       <dependency>
         <groupId>org.99soft.guice</groupId>
@@ -265,28 +274,12 @@
       <dependency>
         <groupId>org.slf4j</groupId>
         <artifactId>slf4j-api</artifactId>
-        <version>1.6.4</version>
+        <version>1.7.5</version>
       </dependency>
       <dependency>
         <groupId>org.slf4j</groupId>
         <artifactId>slf4j-log4j12</artifactId>
-        <version>1.6.4</version>
-      </dependency>
-      <!-- override transitive dependency on slf4j 1.6.1 -->
-      <dependency>
-        <groupId>spark</groupId>
-        <artifactId>spark</artifactId>
-        <version>0.9.9.3-SNAPSHOT</version>
-        <exclusions>
-          <exclusion>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-log4j12</artifactId>
-          </exclusion>
-        </exclusions>
+        <version>1.7.5</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
