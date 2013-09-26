@@ -85,4 +85,21 @@ public final class LocationsTest {
     public void testPosition() {
         assertEquals(153764245, Locations.position("i5053906"));
     }
+
+    // snps.data updated sometime after 12 dec 2012
+
+    @Test
+    public void testIndexNewVersion() {
+        assertEquals(582560 * 2, Locations.index("rs4630"));
+    }
+
+    @Test
+    public void testChromosomeNewVersion() {
+        assertEquals("22", Locations.chromosome("rs4630"));
+    }
+
+    @Test
+    public void testPositionNewVersion() {
+        assertEquals(24376322, Locations.position("rs4630"));
+    }
 }
