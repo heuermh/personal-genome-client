@@ -25,36 +25,19 @@ package com.github.heuermh.personalgenome.client.scribe;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import java.io.InputStream;
-import java.io.IOException;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import com.google.common.base.Joiner;
 
-import com.github.heuermh.personalgenome.client.AccessDeniedException;
 import com.github.heuermh.personalgenome.client.Ancestry;
 import com.github.heuermh.personalgenome.client.Carrier;
 import com.github.heuermh.personalgenome.client.DrugResponse;
 import com.github.heuermh.personalgenome.client.Genome;
 import com.github.heuermh.personalgenome.client.Genotype;
 import com.github.heuermh.personalgenome.client.Haplogroup;
-import com.github.heuermh.personalgenome.client.InvalidClientException;
-import com.github.heuermh.personalgenome.client.InvalidRequestException;
-import com.github.heuermh.personalgenome.client.InvalidScopeException;
-import com.github.heuermh.personalgenome.client.MaternalTerminalSnp;
-import com.github.heuermh.personalgenome.client.PaternalTerminalSnp;
 import com.github.heuermh.personalgenome.client.PersonalGenomeClient;
-import com.github.heuermh.personalgenome.client.PersonalGenomeClientException;
 import com.github.heuermh.personalgenome.client.PersonalGenomeConverter;
-import com.github.heuermh.personalgenome.client.Profile;
-import com.github.heuermh.personalgenome.client.ProfileName;
 import com.github.heuermh.personalgenome.client.Relative;
 import com.github.heuermh.personalgenome.client.Risk;
 import com.github.heuermh.personalgenome.client.Trait;
@@ -65,7 +48,6 @@ import org.scribe.model.OAuthRequest;
 import org.scribe.model.Response;
 import org.scribe.model.Token;
 import org.scribe.model.Verb;
-import org.scribe.model.Verifier;
 import org.scribe.oauth.OAuthService;
 
 import org.slf4j.Logger;

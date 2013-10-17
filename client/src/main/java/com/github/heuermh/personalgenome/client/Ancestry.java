@@ -25,7 +25,6 @@ package com.github.heuermh.personalgenome.client;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import java.util.Collections;
 import java.util.List;
 
 import javax.annotation.concurrent.Immutable;

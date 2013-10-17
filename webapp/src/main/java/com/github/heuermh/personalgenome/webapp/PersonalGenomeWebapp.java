@@ -26,8 +26,6 @@ package com.github.heuermh.personalgenome.webapp;
 import static spark.Spark.get;
 import static spark.Spark.setPort;
 
-import java.util.List;
-
 import com.github.heuermh.personalgenome.client.Genotype;
 import com.github.heuermh.personalgenome.client.PersonalGenomeClient;
 import com.github.heuermh.personalgenome.client.PersonalGenomeConverter;

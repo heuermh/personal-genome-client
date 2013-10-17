@@ -30,7 +30,6 @@
     <version>1.0-SNAPSHOT</version>
   </parent>
   <artifactId>personal-genome-client</artifactId>
-  <version>1.0-SNAPSHOT</version>
   <packaging>jar</packaging>
 
   <name>personal-genome-client</name>

@@ -35,7 +35,6 @@ import org.scribe.model.Verb;
 import org.scribe.model.Verifier;
 import org.scribe.oauth.OAuthService;
 import org.scribe.oauth.OAuth20ServiceImpl;
-import org.scribe.utils.OAuthEncoder;
 
 /**
  * Personal genome API.
@@ -68,15 +67,16 @@ public final class PersonalGenomeApi extends DefaultApi20 {
     public OAuthService createService(final OAuthConfig config) {
         return new OAuth20ServiceImpl(this, config) {
             @Override
-            public Token getAccessToken(final Token requestToken, final Verifier verifier)
-            {
+            public Token getAccessToken(final Token requestToken, final Verifier verifier) {
                 OAuthRequest request = new OAuthRequest(PersonalGenomeApi.this.getAccessTokenVerb(), PersonalGenomeApi.this.getAccessTokenEndpoint());
                 request.addBodyParameter(OAuthConstants.CLIENT_ID, config.getApiKey());
                 request.addBodyParameter(OAuthConstants.CLIENT_SECRET, config.getApiSecret());
                 request.addQuerystringParameter("grant_type", "authorization_code");
                 request.addQuerystringParameter(OAuthConstants.CODE, verifier.getValue());
                 request.addQuerystringParameter(OAuthConstants.REDIRECT_URI, config.getCallback());
-                if(config.hasScope()) request.addQuerystringParameter(OAuthConstants.SCOPE, config.getScope());
+                if (config.hasScope()) {
+                    request.addQuerystringParameter(OAuthConstants.SCOPE, config.getScope());
+                }
 
                 Response response = request.send();
                 return PersonalGenomeApi.this.getAccessTokenExtractor().extract(response.getBody());

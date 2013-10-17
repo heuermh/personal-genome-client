@@ -31,8 +31,6 @@ import java.util.Arrays;
 
 import org.junit.Test;
 
-import com.google.common.collect.ImmutableMap;
-
 /**
  * Unit test for Genome.
  */

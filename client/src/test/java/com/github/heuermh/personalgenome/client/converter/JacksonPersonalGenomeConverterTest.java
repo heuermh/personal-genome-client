@@ -25,7 +25,6 @@ package com.github.heuermh.personalgenome.client.converter;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -45,7 +44,6 @@ import com.github.heuermh.personalgenome.client.InvalidRequestException;
 import com.github.heuermh.personalgenome.client.InvalidScopeException;
 import com.github.heuermh.personalgenome.client.Genome;
 import com.github.heuermh.personalgenome.client.Genotype;
-import com.github.heuermh.personalgenome.client.PersonalGenomeClient;
 import com.github.heuermh.personalgenome.client.PersonalGenomeClientException;
 import com.github.heuermh.personalgenome.client.PersonalGenomeConverter;
 import com.github.heuermh.personalgenome.client.Relative;

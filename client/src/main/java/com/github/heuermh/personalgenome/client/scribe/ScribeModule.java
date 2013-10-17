@@ -48,12 +48,12 @@ public final class ScribeModule extends AbstractModule {
     }
 
     @Provides @Singleton
-    JsonFactory createJsonFactory() {
+    static JsonFactory createJsonFactory() {
         return new JsonFactory();
     }
 
     @Provides @Singleton
-    OAuthService createOAuthService(@Named("apiKey") final String apiKey,
+    static OAuthService createOAuthService(@Named("apiKey") final String apiKey,
                                     @Named("apiSecret") final String apiSecret,
                                     @Named("callback") final String callback,
                                     @Named("scope") final String scope) {
@@ -67,7 +67,7 @@ public final class ScribeModule extends AbstractModule {
     }
 
     @Provides @Singleton
-    PersonalGenomeConverter createPersonalGenomeConverter(final JsonFactory jsonFactory) {
+    static PersonalGenomeConverter createPersonalGenomeConverter(final JsonFactory jsonFactory) {
         return new JacksonPersonalGenomeConverter(jsonFactory);
     }
 }

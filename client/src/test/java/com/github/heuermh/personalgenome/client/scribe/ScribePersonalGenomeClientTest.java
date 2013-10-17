@@ -23,45 +23,18 @@
 */
 package com.github.heuermh.personalgenome.client.scribe;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.verify;
 
-import java.io.InputStream;
-
-import java.util.List;
-
-import com.fasterxml.jackson.core.JsonFactory;
-
 import com.github.heuermh.personalgenome.client.AbstractPersonalGenomeClientTest;
-import com.github.heuermh.personalgenome.client.Ancestry;
-import com.github.heuermh.personalgenome.client.AccessDeniedException;
-import com.github.heuermh.personalgenome.client.Carrier;
-import com.github.heuermh.personalgenome.client.DrugResponse;
-import com.github.heuermh.personalgenome.client.Haplogroup;
-import com.github.heuermh.personalgenome.client.InvalidClientException;
-import com.github.heuermh.personalgenome.client.InvalidRequestException;
-import com.github.heuermh.personalgenome.client.InvalidScopeException;
-import com.github.heuermh.personalgenome.client.Genome;
-import com.github.heuermh.personalgenome.client.Genotype;
 import com.github.heuermh.personalgenome.client.PersonalGenomeClient;
-import com.github.heuermh.personalgenome.client.PersonalGenomeClientException;
 import com.github.heuermh.personalgenome.client.PersonalGenomeConverter;
-import com.github.heuermh.personalgenome.client.Relative;
-import com.github.heuermh.personalgenome.client.Risk;
-import com.github.heuermh.personalgenome.client.Trait;
-import com.github.heuermh.personalgenome.client.User;
-import com.github.heuermh.personalgenome.client.UserName;
 
 import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import org.mockito.Mock;

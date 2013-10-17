@@ -31,7 +31,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -52,7 +51,6 @@ import com.github.heuermh.personalgenome.client.InvalidRequestException;
 import com.github.heuermh.personalgenome.client.InvalidScopeException;
 import com.github.heuermh.personalgenome.client.MaternalTerminalSnp;
 import com.github.heuermh.personalgenome.client.PaternalTerminalSnp;
-import com.github.heuermh.personalgenome.client.PersonalGenomeClient;
 import com.github.heuermh.personalgenome.client.PersonalGenomeClientException;
 import com.github.heuermh.personalgenome.client.PersonalGenomeConverter;
 import com.github.heuermh.personalgenome.client.Profile;
@@ -86,7 +84,7 @@ public final class JacksonPersonalGenomeConverter implements PersonalGenomeConve
         checkNotNull(inputStream);
         JsonParser parser = null;
         try {
-            parser = jsonFactory.createJsonParser(inputStream);
+            parser = jsonFactory.createParser(inputStream);
             parser.nextToken();
 
             String error = null;
@@ -147,7 +145,7 @@ public final class JacksonPersonalGenomeConverter implements PersonalGenomeConve
         checkNotNull(inputStream);
         JsonParser parser = null;
         try {
-            parser = jsonFactory.createJsonParser(inputStream);
+            parser = jsonFactory.createParser(inputStream);
             parser.nextToken();
 
             String id = null;
@@ -204,7 +202,7 @@ public final class JacksonPersonalGenomeConverter implements PersonalGenomeConve
         checkNotNull(inputStream);
         JsonParser parser = null;
         try {
-            parser = jsonFactory.createJsonParser(inputStream);
+            parser = jsonFactory.createParser(inputStream);
             parser.nextToken();
 
             String id = null;
@@ -273,7 +271,7 @@ public final class JacksonPersonalGenomeConverter implements PersonalGenomeConve
         checkNotNull(inputStream);
         JsonParser parser = null;
         try {
-            parser = jsonFactory.createJsonParser(inputStream);
+            parser = jsonFactory.createParser(inputStream);
             parser.nextToken();
 
             String id = null;
@@ -358,7 +356,7 @@ public final class JacksonPersonalGenomeConverter implements PersonalGenomeConve
         checkNotNull(inputStream);
         JsonParser parser = null;
         try {
-            parser = jsonFactory.createJsonParser(inputStream);
+            parser = jsonFactory.createParser(inputStream);
             parser.nextToken();
 
             String id = null;
@@ -406,7 +404,7 @@ public final class JacksonPersonalGenomeConverter implements PersonalGenomeConve
         checkNotNull(inputStream);
         JsonParser parser = null;
         try {
-            parser = jsonFactory.createJsonParser(inputStream);
+            parser = jsonFactory.createParser(inputStream);
             parser.nextToken();
 
             String id = null;
@@ -482,7 +480,7 @@ public final class JacksonPersonalGenomeConverter implements PersonalGenomeConve
         checkNotNull(inputStream);
         JsonParser parser = null;
         try {
-            parser = jsonFactory.createJsonParser(inputStream);
+            parser = jsonFactory.createParser(inputStream);
             parser.nextToken();
 
             String id = null;
@@ -544,19 +542,15 @@ public final class JacksonPersonalGenomeConverter implements PersonalGenomeConve
         checkNotNull(inputStream);
         JsonParser parser = null;
         try {
-            parser = jsonFactory.createJsonParser(inputStream);
+            parser = jsonFactory.createParser(inputStream);
             parser.nextToken();
 
-            String id = null;
             double proportion = -1d;
             while (parser.nextToken() != JsonToken.END_OBJECT) {
                 String field = parser.getCurrentName();
                 parser.nextToken();
 
-                if ("id".equals(field)) {
-                    id = parser.getText();
-                }
-                else if ("neanderthal".equals(field)) {
+                if ("neanderthal".equals(field)) {
                     while (parser.nextToken() != JsonToken.END_OBJECT) {
                         String neanderthalField = parser.getCurrentName();
                         parser.nextToken();
@@ -594,7 +588,7 @@ public final class JacksonPersonalGenomeConverter implements PersonalGenomeConve
         checkNotNull(inputStream);
         JsonParser parser = null;
         try {
-            parser = jsonFactory.createJsonParser(inputStream);
+            parser = jsonFactory.createParser(inputStream);
             parser.nextToken();
 
             List<Relative> relatives = new ArrayList<Relative>();
@@ -701,7 +695,7 @@ public final class JacksonPersonalGenomeConverter implements PersonalGenomeConve
         checkNotNull(inputStream);
         JsonParser parser = null;
         try {
-            parser = jsonFactory.createJsonParser(inputStream);
+            parser = jsonFactory.createParser(inputStream);
             parser.nextToken();
 
             String id = null;
@@ -771,7 +765,7 @@ public final class JacksonPersonalGenomeConverter implements PersonalGenomeConve
         checkNotNull(inputStream);
         JsonParser parser = null;
         try {
-            parser = jsonFactory.createJsonParser(inputStream);
+            parser = jsonFactory.createParser(inputStream);
             parser.nextToken();
 
             String id = null;
@@ -836,7 +830,7 @@ public final class JacksonPersonalGenomeConverter implements PersonalGenomeConve
         checkNotNull(inputStream);
         JsonParser parser = null;
         try {
-            parser = jsonFactory.createJsonParser(inputStream);
+            parser = jsonFactory.createParser(inputStream);
             parser.nextToken();
 
             String id = null;
@@ -901,7 +895,7 @@ public final class JacksonPersonalGenomeConverter implements PersonalGenomeConve
         checkNotNull(inputStream);
         JsonParser parser = null;
         try {
-            parser = jsonFactory.createJsonParser(inputStream);
+            parser = jsonFactory.createParser(inputStream);
             parser.nextToken();
 
             String id = null;

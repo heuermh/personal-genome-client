@@ -33,7 +33,6 @@ import com.github.heuermh.personalgenome.client.DrugResponse;
 import com.github.heuermh.personalgenome.client.Genome;
 import com.github.heuermh.personalgenome.client.Genotype;
 import com.github.heuermh.personalgenome.client.Haplogroup;
-import com.github.heuermh.personalgenome.client.PersonalGenomeClient;
 import com.github.heuermh.personalgenome.client.PersonalGenomeClientException;
 import com.github.heuermh.personalgenome.client.Relative;
 import com.github.heuermh.personalgenome.client.Risk;
