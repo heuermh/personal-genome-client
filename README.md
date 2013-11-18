@@ -94,3 +94,7 @@ in a browser.
       System.out.println("genome:");
       System.out.println("   values: " + (length < 32) ? genomes.getValues() : genomes.getValues().substring(0, 32) + "...")
     }
+
+
+[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/heuermh/personal-genome-client/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
+
