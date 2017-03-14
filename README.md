@@ -6,7 +6,7 @@ Java client for the 23andMe Personal Genome API.
 [![Build Status](https://travis-ci.org/heuermh/personal-genome-client.png)](https://travis-ci.org/heuermh/personal-genome-client)
 
 
-###Hacking personal-genome-client
+### Hacking personal-genome-client
 
 Install
 
@@ -41,7 +41,7 @@ Open
 in a browser.
 
 
-###Using personal-genome-client
+### Using personal-genome-client
 
     OAuthService service = ...;
     Token accessToken = ...;
